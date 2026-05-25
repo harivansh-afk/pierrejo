@@ -38,8 +38,8 @@ in
 
   config = lib.mkIf cfg.enable {
     systemd.tmpfiles.rules = [
-      "d /run/pierre-ssr 0755 \${cfg.user} \${cfg.group} -"
-      "d \${cfg.cacheDir} 0750 \${cfg.user} \${cfg.group} -"
+      "d /run/pierre-ssr 0755 ${cfg.user} ${cfg.group} -"
+      "d ${cfg.cacheDir} 0750 ${cfg.user} ${cfg.group} -"
     ];
 
     systemd.services.pierre-ssr = {
@@ -53,10 +53,10 @@ in
         RuntimeDirectory = "pierre-ssr";
         CacheDirectory = "pierre-ssr";
         Environment = [
-          "PIERRE_SSR_SOCKET=\${cfg.socketPath}"
-          "PIERRE_SSR_CACHE_DIR=\${cfg.cacheDir}"
+          "PIERRE_SSR_SOCKET=${cfg.socketPath}"
+          "PIERRE_SSR_CACHE_DIR=${cfg.cacheDir}"
         ];
-        ExecStart = "\${cfg.package}/bin/pierre-ssr";
+        ExecStart = "${cfg.package}/bin/pierre-ssr";
         Restart = "on-failure";
         RestartSec = "2s";
         NoNewPrivileges = true;
