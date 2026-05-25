@@ -18,15 +18,15 @@ export function getDiffInstance(placeholder) {
 }
 
 // Walk the server-emitted hidden conversation blocks and group them by path.
-// Each `<div class="harivan-pierre-conversation-item">` is one review thread for
+// Each `<div class="pierre-forgejo-conversation-item">` is one review thread for
 // a single line + side. We hand its outerHTML to Pierre as the annotation body.
 export function loadConversationsFromDom() {
   conversationsByPath.clear();
-  const blocks = document.querySelectorAll('[data-harivan-pierre-conversations="1"]');
+  const blocks = document.querySelectorAll('[data-pierre-forgejo-conversations="1"]');
   for (const block of blocks) {
     const path = block.dataset.path;
     if (!path) continue;
-    const items = block.querySelectorAll(".harivan-pierre-conversation-item");
+    const items = block.querySelectorAll(".pierre-forgejo-conversation-item");
     const annotations = [];
     for (const item of items) {
       const line = Number(item.dataset.line);
@@ -69,7 +69,7 @@ export function replaceConversation({ path, lineNumber, side, html, conversation
 export function viewAnnotationsForPlaceholder(placeholder) {
   const state = placeholderState.get(placeholder);
   if (!state) return [];
-  const path = placeholder.dataset.harivanPierreFile;
+  const path = placeholder.dataset.pierreForgejoFile;
   const base = annotationsForPath(path);
   if (!state.composer) return base;
   // Composer overrides any existing conversation at the same line+side slot.

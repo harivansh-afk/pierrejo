@@ -24,7 +24,7 @@ export async function mountNativeComposer({
   onClose,
 }) {
   const wrapper = document.createElement("div");
-  wrapper.className = "harivan-pierre-native-composer";
+  wrapper.className = "pierre-forgejo-native-composer";
   wrapper.innerHTML = await fetchNativeCommentForm(newCommentUrl);
 
   setInput(wrapper, "line", String(lineNumber || 0));

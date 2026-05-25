@@ -41,9 +41,14 @@ let
     (root + "/patches/forgejo-15.0.2/0001-pierre-ssr-highlighting.patch")
     (root + "/patches/forgejo-15.0.2/0002-expose-init-globals.patch")
   ];
+
+  assets = pkgs.runCommand "pierrejo-forgejo-assets" { } ''
+    mkdir -p $out/css
+    cp \${root + "/assets/css/pierre-forgejo.css"} $out/css/pierre-forgejo.css
+  '';
 in
 {
-  inherit frontend patches ssrPackage;
+  inherit assets frontend patches ssrPackage;
 
   nixosModule = root + "/nix/pierre-ssr.nix";
   templates = root + "/templates";

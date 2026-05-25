@@ -10,7 +10,7 @@ function forgejoThemeType() {
 export function pierreDiffOptions(placeholder) {
   return {
     disableFileHeader: true,
-    diffStyle: placeholder?.dataset.harivanPierreSplit === "1" ? "split" : "unified",
+    diffStyle: placeholder?.dataset.pierreForgejoSplit === "1" ? "split" : "unified",
     lineDiffType: "word-alt",
     theme: {
       dark: "cozybox-dark",

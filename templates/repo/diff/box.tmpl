@@ -213,12 +213,12 @@
 											with a shadow root. Declarative shadow DOM puts the SSR HTML in the
 											shadow root at parse time, before any JS runs.
 										*/}}
-										<diffs-container class="harivan-pierre-diff"
-											data-harivan-pierre-placeholder="1"
-											data-harivan-pierre-file="{{$file.Name}}"
-											data-harivan-pierre-split="{{if $.IsSplitStyle}}1{{else}}0{{end}}"
-											data-harivan-pierre-pull="{{if $.PageIsPullFiles}}1{{else}}0{{end}}"
-											data-harivan-pierre-can-comment="{{if and $.PageIsPullFiles $.IsSigned (not $.Repository.IsArchived)}}1{{else}}0{{end}}"
+										<diffs-container class="pierre-forgejo-diff"
+											data-pierre-forgejo-placeholder="1"
+											data-pierre-forgejo-file="{{$file.Name}}"
+											data-pierre-forgejo-split="{{if $.IsSplitStyle}}1{{else}}0{{end}}"
+											data-pierre-forgejo-pull="{{if $.PageIsPullFiles}}1{{else}}0{{end}}"
+											data-pierre-forgejo-can-comment="{{if and $.PageIsPullFiles $.IsSigned (not $.Repository.IsArchived)}}1{{else}}0{{end}}"
 											data-new-comment-url="{{$.Issue.Link}}/files/reviews/new_comment"
 											data-path="{{$file.Name}}">
 											<template shadowrootmode="open">{{$pierreSsr}}</template>
@@ -234,9 +234,9 @@
 												delegated handler ($(document).on('click', '.resolve-conversation', ...))
 												continues to fire correctly.
 											*/}}
-											<div class="harivan-pierre-conversations" data-harivan-pierre-conversations="1" data-path="{{$file.Name}}" hidden>
+											<div class="pierre-forgejo-conversations" data-pierre-forgejo-conversations="1" data-path="{{$file.Name}}" hidden>
 												{{range $section := $file.Sections}}{{range $line := $section.Lines}}{{range $conv := $line.Conversations}}
-													<div class="harivan-pierre-conversation-item"
+													<div class="pierre-forgejo-conversation-item"
 														data-conversation-id="{{(index $conv 0).ID}}"
 														data-line="{{if $line.RightIdx}}{{$line.RightIdx}}{{else}}{{$line.LeftIdx}}{{end}}"
 														data-side="{{if $line.RightIdx}}additions{{else}}deletions{{end}}">
