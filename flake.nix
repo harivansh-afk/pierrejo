@@ -27,6 +27,7 @@
         in
         {
           default = pierrejo.frontend;
+          assets = pierrejo.assets;
           frontend = pierrejo.frontend;
           ssr = pierrejo.ssrPackage;
         }
@@ -41,6 +42,7 @@
           };
         in
         {
+          assets = pierrejo.assets;
           frontend = pierrejo.frontend;
           ssr = pierrejo.ssrPackage;
         }

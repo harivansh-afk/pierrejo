@@ -55,12 +55,12 @@ function forceHostColorScheme(placeholder, options) {
 }
 
 async function hydratePlaceholder(placeholder) {
-  if (placeholder.dataset.harivanPierreHydrated === "1") return;
-  placeholder.dataset.harivanPierreHydrated = "1";
+  if (placeholder.dataset.pierreForgejoHydrated === "1") return;
+  placeholder.dataset.pierreForgejoHydrated = "1";
 
   let fileDiff;
   try {
-    fileDiff = matchFile(await loadPatchFiles(), placeholder.dataset.harivanPierreFile);
+    fileDiff = matchFile(await loadPatchFiles(), placeholder.dataset.pierreForgejoFile);
   } catch (error) {
     console.warn("Pierre diff metadata load failed", error);
   }
@@ -91,7 +91,7 @@ async function hydratePlaceholder(placeholder) {
     instance.setLineAnnotations(viewAnnotationsForPlaceholder(placeholder));
   } catch (error) {
     console.warn("Pierre diff hydration failed", error);
-    delete placeholder.dataset.harivanPierreHydrated;
+    delete placeholder.dataset.pierreForgejoHydrated;
   }
 }
 
@@ -99,7 +99,7 @@ export function hydratePierreDiffs() {
   // Read all server-emitted hidden conversation blocks before any FileDiff is
   // created so lineAnnotations() returns the right baseline at hydrate time.
   loadConversationsFromDom();
-  for (const placeholder of document.querySelectorAll('[data-harivan-pierre-placeholder="1"]')) {
+  for (const placeholder of document.querySelectorAll('[data-pierre-forgejo-placeholder="1"]')) {
     void hydratePlaceholder(placeholder);
   }
 }

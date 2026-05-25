@@ -12,7 +12,7 @@ import {
 // file. The store is populated from server-emitted hidden conversation blocks
 // at page load (see loadConversationsFromDom in pr-store.js).
 export function lineAnnotations(placeholder) {
-  return annotationsForPath(placeholder?.dataset.harivanPierreFile);
+  return annotationsForPath(placeholder?.dataset.pierreForgejoFile);
 }
 
 function refreshAnnotations(placeholder) {
@@ -34,7 +34,7 @@ export function renderGutterUtility(placeholder) {
   return (getHoveredRow) => {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "harivan-pierre-gutter-comment";
+    button.className = "pierre-forgejo-gutter-comment";
     button.title = "Add comment";
     button.setAttribute("aria-label", "Add comment");
     button.textContent = "+";
@@ -87,7 +87,7 @@ export function renderPlaceholderAnnotation(annotation) {
 
   if (meta.kind === "conversation") {
     const wrapper = document.createElement("div");
-    wrapper.className = "harivan-pierre-conversation";
+    wrapper.className = "pierre-forgejo-conversation";
     wrapper.dataset.path = meta.path ?? "";
     wrapper.dataset.line = String(annotation.lineNumber);
     wrapper.dataset.side = annotation.side;
@@ -97,7 +97,7 @@ export function renderPlaceholderAnnotation(annotation) {
 
   if (meta.kind === "composer") {
     const wrapper = document.createElement("div");
-    wrapper.className = "harivan-pierre-composer-slot";
+    wrapper.className = "pierre-forgejo-composer-slot";
     wrapper.dataset.path = meta.path ?? "";
     wrapper.dataset.line = String(annotation.lineNumber);
     wrapper.dataset.side = annotation.side;
