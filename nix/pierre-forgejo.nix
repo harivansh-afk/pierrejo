@@ -17,6 +17,7 @@ let
       cp -R dist/. $out/js/
       runHook postInstall
     '';
+    meta.license = pkgs.lib.licenses.asl20;
   };
 
   ssrPackage = pkgs.buildNpmPackage {
@@ -35,6 +36,7 @@ let
       makeWrapper \${pkgs.nodejs}/bin/node $out/bin/pierre-ssr --add-flags $out/lib/pierrejo-ssr/server.js
       runHook postInstall
     '';
+    meta.license = pkgs.lib.licenses.asl20;
   };
 
   patches = [
@@ -42,13 +44,22 @@ let
     (root + "/patches/forgejo-15.0.2/0002-expose-init-globals.patch")
   ];
 
-  assets = pkgs.runCommand "pierrejo-forgejo-assets" { } ''
-    mkdir -p $out/css
-    cp \${root + "/assets/css/pierre-forgejo.css"} $out/css/pierre-forgejo.css
-  '';
+  assets =
+    pkgs.runCommand "pierrejo-forgejo-assets" { } ''
+      mkdir -p $out/css
+      cp \${root + "/assets/css/pierre-forgejo.css"} $out/css/pierre-forgejo.css
+    ''
+    // {
+      meta.license = pkgs.lib.licenses.asl20;
+    };
 in
 {
-  inherit assets frontend patches ssrPackage;
+  inherit
+    assets
+    frontend
+    patches
+    ssrPackage
+    ;
 
   nixosModule = root + "/nix/pierre-ssr.nix";
   templates = root + "/templates";
