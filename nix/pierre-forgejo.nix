@@ -39,10 +39,16 @@ let
     meta.license = pkgs.lib.licenses.asl20;
   };
 
-  patches = [
+  corePatches = [
     (root + "/patches/forgejo-15.0.2/0001-pierre-ssr-highlighting.patch")
     (root + "/patches/forgejo-15.0.2/0002-expose-init-globals.patch")
   ];
+
+  fileViewPatches = [
+    (root + "/patches/forgejo-15.0.2/0003-pierre-file-view-highlighting.patch")
+  ];
+
+  patches = corePatches ++ fileViewPatches;
 
   assets =
     pkgs.runCommand "pierrejo-forgejo-assets" { } ''
@@ -65,8 +71,11 @@ in
   templates = root + "/templates";
 
   mkForgejoWithPierre =
+    {
+      fileView ? false,
+    }:
     forgejoPackage:
     forgejoPackage.overrideAttrs (old: {
-      patches = (old.patches or [ ]) ++ patches;
+      patches = (old.patches or [ ]) ++ corePatches ++ pkgs.lib.optionals fileView fileViewPatches;
     });
 }

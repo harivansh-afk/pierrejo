@@ -50,7 +50,9 @@ function requestBody(request) {
 }
 
 async function ensureLanguage(language, fileName) {
-  const candidates = [language, fileName?.split(".").pop(), "text"].filter(Boolean);
+  const candidates = [language, fileName?.split(".").pop(), "text"]
+    .filter(Boolean)
+    .map((candidate) => candidate.toLowerCase());
   for (const candidate of candidates) {
     try {
       await highlighter.loadLanguage(candidate);

@@ -25,7 +25,7 @@ pierrejo packages the Forgejo integration layer for @pierre/diffs: a server-side
       imports = [ pierrejo.nixosModule ];
 
       services.pierre-ssr.enable = true;
-      services.forgejo.package = pierrejo.mkForgejoWithPierre pkgs.forgejo-lts;
+      services.forgejo.package = pierrejo.mkForgejoWithPierre { } pkgs.forgejo-lts;
 
       systemd.services.forgejo = {
         after = [ "pierre-ssr.service" ];
@@ -40,3 +40,24 @@ The consumer must expose these files through Forgejo's custom directory:
 - pierrejo.templates / repo / diff / box.tmpl under custom/templates/repo/diff/box.tmpl
 
 The current patches target Forgejo 15.0.2.
+
+## File view highlighting
+
+`mkForgejoWithPierre` takes an options set. By default Pierre renders only
+diffs and leaves the single-file source viewer to Forgejo's native (Chroma)
+highlighter, which respects Forgejo's theme and detects languages by
+extension, shebang, and filename:
+
+    services.forgejo.package = pierrejo.mkForgejoWithPierre { } pkgs.forgejo-lts;
+
+Set `fileView = true` to also route the single-file viewer through Pierre's
+Shiki tokenizer:
+
+    services.forgejo.package =
+      pierrejo.mkForgejoWithPierre { fileView = true; } pkgs.forgejo-lts;
+
+Pierre's file-view output uses Shiki's dual-theme CSS variables
+(`--shiki-light` / `--shiki-dark`), so enabling `fileView` requires the
+consumer to ship CSS that consumes them, e.g.
+`color: light-dark(var(--shiki-light), var(--shiki-dark))`; otherwise the
+tokens render uncolored.
