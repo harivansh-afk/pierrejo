@@ -1,18 +1,12 @@
 {
   pkgs,
   sourceRoot ? ../.,
-  # Optional custom diff theme. Set to { dark = <shiki-theme.json>; light =
-  # <shiki-theme.json>; } to replace the bundled cozybox theme. The Shiki theme
-  # name is read from each JSON's `name` field, so no other config is needed.
-  # Defaults to null (the bundled cozybox theme).
   theme ? null,
 }:
 let
   root =
     if builtins.isAttrs sourceRoot && sourceRoot ? outPath then sourceRoot.outPath else sourceRoot;
 
-  # When a custom theme is provided, return a copy of `srcDir` with the bundled
-  # theme JSON replaced; otherwise return the source unchanged.
   withTheme =
     name: srcDir: themesRel:
     if theme == null then
