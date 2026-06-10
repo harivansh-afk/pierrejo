@@ -5,19 +5,18 @@ import { dirname, join } from "node:path";
 import { registerCustomTheme } from "@pierre/diffs";
 import { preloadPatchDiff } from "@pierre/diffs/ssr";
 import { createHighlighter, createJavaScriptRegexEngine } from "shiki";
-import cozyboxDark from "./themes/cozybox-dark.json" with { type: "json" };
-import cozyboxLight from "./themes/cozybox-light.json" with { type: "json" };
+import { pierreThemeNames, pierreThemes } from "./theme.js";
 
 const socketPath = process.env.PIERRE_SSR_SOCKET ?? "/run/pierre-ssr/pierre.sock";
 const cacheDir = process.env.PIERRE_SSR_CACHE_DIR ?? "/var/cache/pierre-ssr";
 const maxBodyBytes = Number(process.env.PIERRE_SSR_MAX_BODY_BYTES ?? 16 * 1024 * 1024);
 
-registerCustomTheme("cozybox-dark", () => Promise.resolve(cozyboxDark));
-registerCustomTheme("cozybox-light", () => Promise.resolve(cozyboxLight));
+registerCustomTheme(pierreThemeNames.dark, () => Promise.resolve(pierreThemes.dark));
+registerCustomTheme(pierreThemeNames.light, () => Promise.resolve(pierreThemes.light));
 
-const themes = { dark: "cozybox-dark", light: "cozybox-light" };
+const themes = { dark: pierreThemeNames.dark, light: pierreThemeNames.light };
 const highlighter = await createHighlighter({
-  themes: [cozyboxDark, cozyboxLight],
+  themes: [pierreThemes.dark, pierreThemes.light],
   langs: ["text"],
   engine: createJavaScriptRegexEngine(),
 });

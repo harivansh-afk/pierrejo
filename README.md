@@ -41,6 +41,26 @@ The consumer must expose these files through Forgejo's custom directory:
 
 The current patches target Forgejo 15.0.2.
 
+## Custom diff theme
+
+By default diffs are highlighted with the bundled `cozybox` Shiki theme. To use
+your own palette, pass `theme` to `mkPierreForgejo` with a dark and light
+[Shiki/TextMate theme JSON](https://shiki.style/guide/load-theme) (the same
+`{ name, type, colors, tokenColors }` shape as the bundled themes):
+
+    let
+      pierrejo = inputs.pierrejo.lib.mkPierreForgejo {
+        inherit pkgs;
+        theme = {
+          dark = ./themes/midnight-dark.json;
+          light = ./themes/midnight-light.json;
+        };
+      };
+
+The Shiki theme name is read from each JSON's `name` field, so the frontend and
+SSR sidecar stay in sync automatically. Omitting `theme` keeps the bundled
+cozybox theme.
+
 ## File view highlighting
 
 `mkForgejoWithPierre` takes an options set. By default Pierre renders only
