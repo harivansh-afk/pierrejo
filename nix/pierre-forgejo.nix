@@ -1,15 +1,35 @@
 {
   pkgs,
   sourceRoot ? ../.,
+  # Optional custom diff theme. Set to { dark = <shiki-theme.json>; light =
+  # <shiki-theme.json>; } to replace the bundled cozybox theme. The Shiki theme
+  # name is read from each JSON's `name` field, so no other config is needed.
+  # Defaults to null (the bundled cozybox theme).
+  theme ? null,
 }:
 let
   root =
     if builtins.isAttrs sourceRoot && sourceRoot ? outPath then sourceRoot.outPath else sourceRoot;
 
+  # When a custom theme is provided, return a copy of `srcDir` with the bundled
+  # theme JSON replaced; otherwise return the source unchanged.
+  withTheme =
+    name: srcDir: themesRel:
+    if theme == null then
+      srcDir
+    else
+      pkgs.runCommand "pierrejo-${name}-themed-src" { } ''
+        mkdir -p $out
+        cp -R ${srcDir}/. $out/
+        chmod -R u+w $out
+        cp ${theme.dark} $out/${themesRel}/cozybox-dark.json
+        cp ${theme.light} $out/${themesRel}/cozybox-light.json
+      '';
+
   frontend = pkgs.buildNpmPackage {
     pname = "pierrejo-frontend";
     version = "0.1.0";
-    src = root + "/frontend";
+    src = withTheme "frontend" (root + "/frontend") "src/pierre/themes";
     npmDepsHash = "sha256-wIyJ3Af65p615GqhbxUbvetOlOTe1Rg75oYAsQnLvPA=";
     installPhase = ''
       runHook preInstall
@@ -23,7 +43,7 @@ let
   ssrPackage = pkgs.buildNpmPackage {
     pname = "pierrejo-ssr";
     version = "0.1.0";
-    src = root + "/ssr";
+    src = withTheme "ssr" (root + "/ssr") "themes";
     npmDepsHash = "sha256-fIj9bUjAYvnIe2o1IT9l9wr8tn1MtomNKb/dvLYfiGQ=";
     dontNpmBuild = true;
     nativeBuildInputs = [

@@ -1,3 +1,5 @@
+import { pierreThemeNames } from "./theme.js";
+
 function forgejoThemeType() {
   const theme = document.documentElement.dataset.theme ?? document.body?.dataset.theme ?? "";
 
@@ -13,8 +15,8 @@ export function pierreDiffOptions(placeholder) {
     diffStyle: placeholder?.dataset.pierreForgejoSplit === "1" ? "split" : "unified",
     lineDiffType: "word-alt",
     theme: {
-      dark: "cozybox-dark",
-      light: "cozybox-light",
+      dark: pierreThemeNames.dark,
+      light: pierreThemeNames.light,
     },
     themeType: forgejoThemeType(),
     // Pierre 1.2.3 gates the gutter utility behind these two flags. Without

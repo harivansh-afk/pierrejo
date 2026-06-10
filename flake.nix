@@ -59,7 +59,8 @@
         {
           pkgs,
           sourceRoot ? self.outPath,
+          theme ? null,
         }:
-        import ./nix/pierre-forgejo.nix { inherit pkgs sourceRoot; };
+        import ./nix/pierre-forgejo.nix { inherit pkgs sourceRoot theme; };
     };
 }

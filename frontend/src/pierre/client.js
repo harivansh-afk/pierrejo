@@ -1,11 +1,10 @@
 import * as pierreModule from "@pierre/diffs";
-import cozyboxDark from "./themes/cozybox-dark.json" with { type: "json" };
-import cozyboxLight from "./themes/cozybox-light.json" with { type: "json" };
+import { pierreThemeNames, pierreThemes } from "./theme.js";
 
 let registered = false;
 if (!registered) {
-  pierreModule.registerCustomTheme("cozybox-dark", () => Promise.resolve(cozyboxDark));
-  pierreModule.registerCustomTheme("cozybox-light", () => Promise.resolve(cozyboxLight));
+  pierreModule.registerCustomTheme(pierreThemeNames.dark, () => Promise.resolve(pierreThemes.dark));
+  pierreModule.registerCustomTheme(pierreThemeNames.light, () => Promise.resolve(pierreThemes.light));
   registered = true;
 }
 
