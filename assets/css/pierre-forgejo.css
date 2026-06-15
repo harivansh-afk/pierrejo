@@ -38,6 +38,13 @@
   top: var(--pierre-forgejo-file-tree-top, 47px);
 }
 
+[data-pierre-forgejo-file-tree="1"].pierre-forgejo-file-tree-fixed {
+  position: fixed;
+  z-index: 20;
+  left: var(--pierre-forgejo-file-tree-left);
+  width: var(--pierre-forgejo-file-tree-fixed-width);
+}
+
 [data-pierre-forgejo-file-tree="1"] file-tree-container {
   display: flex;
   box-sizing: border-box;
