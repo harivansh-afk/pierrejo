@@ -86,11 +86,16 @@ in
   templates = root + "/templates";
 
   mkForgejoWithPierre =
-    {
-      fileView ? false,
-    }:
-    forgejoPackage:
-    forgejoPackage.overrideAttrs (old: {
-      patches = (old.patches or [ ]) ++ corePatches ++ pkgs.lib.optionals fileView fileViewPatches;
-    });
+    arg:
+    let
+      mkWithOptions =
+        {
+          fileView ? false,
+        }:
+        forgejoPackage:
+        forgejoPackage.overrideAttrs (old: {
+          patches = (old.patches or [ ]) ++ corePatches ++ pkgs.lib.optionals fileView fileViewPatches;
+        });
+    in
+    if pkgs.lib.isDerivation arg then mkWithOptions { } arg else mkWithOptions arg;
 }
