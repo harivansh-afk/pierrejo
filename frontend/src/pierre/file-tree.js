@@ -4,7 +4,7 @@ import { treeUnsafeCss } from "./tree-theme.js";
 
 const CONTAINER_ID = "diff-file-tree";
 const TREE_ID = "pierre-file-tree";
-const STORAGE_KEY = "diff_file_tree_visible";
+const STORAGE_KEY = "pierre_diff_file_tree_visible";
 
 const DIFF_TYPE_STATUS = {
   1: "added",
@@ -109,6 +109,14 @@ function selectFromHash(controller) {
 
 function toggleElement(el, show) {
   el?.classList.toggle("tw-hidden", !show);
+}
+
+function storedTreeVisible() {
+  try {
+    return localStorage?.getItem(STORAGE_KEY) !== "false";
+  } catch {
+    return true;
+  }
 }
 
 function setTreeVisible(controller, visible) {
@@ -227,13 +235,13 @@ export function hydratePierreFileTrees() {
   if (!container || container.dataset.pierreForgejoFileTree !== "1") return;
 
   if (activeTree?.container === container) {
-    mountTree(activeTree);
+    setTreeVisible(activeTree, storedTreeVisible());
     return;
   }
 
   cleanupActiveTree();
   activeTree = createController(container);
-  mountTree(activeTree);
+  setTreeVisible(activeTree, storedTreeVisible());
 }
 
 document.addEventListener("turbo:before-cache", cleanupActiveTree);
