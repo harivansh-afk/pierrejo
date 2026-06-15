@@ -203,7 +203,7 @@ function treeOptions(payload) {
     presorted: true,
     initialExpansion: "open",
     initialVisibleRowCount: 200,
-    icons: { set: "standard", colored: true },
+    icons: { set: "minimal", colored: false },
     unsafeCSS: treeUnsafeCss(forgejoThemeType(payload.theme)),
   };
 }
