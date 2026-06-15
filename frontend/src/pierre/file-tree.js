@@ -2,10 +2,15 @@ import { FileTree } from "@pierre/trees";
 import { forgejoThemeType } from "./options.js";
 import { treeUnsafeCss } from "./tree-theme.js";
 
-// Must match the `id` used by the SSR sidecar (ssr/server.js renderTree) and
-// the Go PierreFileTree helper so FileTree.hydrate() attaches to the
-// server-rendered <file-tree-container>.
-const DIFF_TREE_ID = "diff-file-tree";
+// Wrapper element id from box.tmpl. Deliberately NOT "diff-file-tree" so
+// Forgejo's native initDiffFileTree() (getElementById('diff-file-tree')) bails
+// and never mounts its Vue tree over ours.
+const CONTAINER_ID = "pierre-diff-file-tree";
+
+// Pierre FileTree instance id. Must match the id the Go PierreFileTree helper
+// sends to the sidecar (so SSR sets <file-tree-container id="pierre-file-tree">
+// and FileTree.hydrate() attaches to it). Also must not be "diff-file-tree".
+const TREE_ID = "pierre-file-tree";
 
 // Forgejo DiffFileType (services/gitdiff): 1 add, 2 change, 3 delete,
 // 4 rename, 5 copy. Pierre has no "copied" status; a copy is a new file.
@@ -54,15 +59,20 @@ function hashPath() {
   return hash && diffTreeState?.pathByAnchor.has(hash) ? diffTreeState.pathByAnchor.get(hash) : null;
 }
 
-// Expand a folded diff box, exactly like the native DiffFileTree did. The
-// folding helper is exposed on window by the file-fold.js patch.
+// Expand a folded diff box, like the native DiffFileTree did. nixpkgs builds
+// Forgejo's own JS from unpatched source, so we cannot rely on a patched-in
+// window._pierreSetFileFolding; replicate the unfold directly on the DOM.
+// Forgejo's CSS reveals .diff-file-body when the box's data-folded != "true";
+// we also flip the chevron icon by cloning a "down" chevron from any already
+// expanded fold button (avoids hardcoding the octicon SVG).
 function expandDiffBox(anchor) {
   if (!anchor) return;
   const box = document.querySelector(anchor);
-  if (!box) return;
-  if (box.getAttribute("data-folded") === "true" && typeof window._pierreSetFileFolding === "function") {
-    window._pierreSetFileFolding(box, box.querySelector(".fold-file"), false);
-  }
+  if (!box || box.getAttribute("data-folded") !== "true") return;
+  box.setAttribute("data-folded", "false");
+  const fold = box.querySelector(".fold-file");
+  const downChevron = document.querySelector('.diff-file-box:not([data-folded="true"]) .fold-file > svg');
+  if (fold && downChevron) fold.innerHTML = downChevron.outerHTML;
 }
 
 function onTreeSelection(paths) {
@@ -101,7 +111,7 @@ function toggleElem(el, show) {
 }
 
 function setDiffTreeVisible(visible) {
-  const tree = document.getElementById(DIFF_TREE_ID);
+  const tree = document.getElementById(CONTAINER_ID);
   const btn = document.querySelector(".diff-toggle-file-tree-button");
   if (!tree || !btn) return;
   const [toShow, toHide] = btn.querySelectorAll(".icon");
@@ -124,7 +134,7 @@ function isVisible(el) {
 }
 
 function mountDiffTree() {
-  const container = document.getElementById(DIFF_TREE_ID);
+  const container = document.getElementById(CONTAINER_ID);
   if (!container || container.dataset.pierreForgejoFileTree !== "1") return;
   if (container.dataset.pierreForgejoHydrated === "1") return;
   if (!isVisible(container)) return; // hydrate later, on first reveal
@@ -135,7 +145,7 @@ function mountDiffTree() {
   // Options here must match ssr/server.js treeOptions exactly (minus the
   // non-serializable onSelectionChange) so hydration does not re-flow.
   const options = {
-    id: DIFF_TREE_ID,
+    id: TREE_ID,
     paths: state.paths,
     gitStatus: state.gitStatus,
     initialExpansion: "open",
@@ -171,7 +181,7 @@ function wireDiffTree() {
 
   const btn = document.querySelector(".diff-toggle-file-tree-button");
   if (btn) {
-    const visible = () => !document.getElementById(DIFF_TREE_ID)?.classList.contains("tw-hidden");
+    const visible = () => !document.getElementById(CONTAINER_ID)?.classList.contains("tw-hidden");
     btn.addEventListener("click", () => setDiffTreeVisible(!visible()));
   }
 
@@ -199,7 +209,7 @@ function wireDiffTree() {
 }
 
 export function hydratePierreFileTrees() {
-  const container = document.getElementById(DIFF_TREE_ID);
+  const container = document.getElementById(CONTAINER_ID);
   if (!container || container.dataset.pierreForgejoFileTree !== "1") return;
   wireDiffTree();
   mountDiffTree();

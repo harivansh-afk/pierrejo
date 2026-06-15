@@ -96,9 +96,17 @@
 				sidecar is unavailable PierreFileTree returns "", and the bridge
 				falls back to client-side mounting from the diff-file-box DOM.
 			*/}}
-			<div id="diff-file-tree" class="tw-hidden not-mobile" data-pierre-forgejo-file-tree="1">{{PierreFileTree .Diff.Files $pierreTheme}}</div>
+			{{/*
+				Use a Pierre-specific id (not #diff-file-tree) so Forgejo's native
+				initDiffFileTree() — which does getElementById('diff-file-tree') and
+				returns early when absent — never mounts its Vue tree over our SSR
+				tree. nixpkgs builds Forgejo's own JS from unpatched source, so the
+				Vue tree cannot be disabled with a Forgejo-side patch; suppressing it
+				by id is robust and needs no patch.
+			*/}}
+			<div id="pierre-diff-file-tree" class="tw-hidden not-mobile" data-pierre-forgejo-file-tree="1">{{PierreFileTree .Diff.Files $pierreTheme}}</div>
 			<script>
-				if (diffTreeVisible) document.getElementById('diff-file-tree').classList.remove('tw-hidden');
+				if (diffTreeVisible) document.getElementById('pierre-diff-file-tree').classList.remove('tw-hidden');
 			</script>
 		{{end}}
 		<div id="diff-content-container">

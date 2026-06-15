@@ -88,7 +88,7 @@ index 0000000..0f7a777
 +		return ""
 +	}
 +
-+	html, ok := pierreTreeRender("diff-file-tree", paths, status, "", theme)
++	html, ok := pierreTreeRender("pierre-file-tree", paths, status, "", theme)
 +	if !ok {
 +		return ""
 +	}
