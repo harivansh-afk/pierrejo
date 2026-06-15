@@ -1,4 +1,8 @@
 {{$showFileTree := (and (not .DiffNotAvailable) (gt .Diff.NumFiles 1))}}
+{{$pierreTheme := "system"}}
+{{if $.IsSigned}}{{$pierreTheme = $.SignedUser.Theme}}{{end}}
+{{$pierreTree := ""}}
+{{if $showFileTree}}{{$pierreTree = PierreFileTree .Diff.Files $pierreTheme}}{{end}}
 <div>
 	<div class="diff-detail-box diff-box">
 		<div class="tw-flex tw-items-center tw-flex-wrap tw-gap-2 tw-ml-0.5">
@@ -10,7 +14,8 @@
 				</button>
 				<script>
 					// Default to true if unset
-					const diffTreeVisible = localStorage?.getItem('diff_file_tree_visible') !== 'false';
+					const diffTreeStorageKey = 'diff_file_tree_visible';
+					const diffTreeVisible = localStorage?.getItem(diffTreeStorageKey) !== 'false';
 					const diffTreeBtn = document.querySelector('.diff-toggle-file-tree-button');
 					const diffTreeIcon = `.octicon-sidebar-${diffTreeVisible ? 'expand' : 'collapse'}`;
 					diffTreeBtn.querySelector(diffTreeIcon).classList.remove('tw-hidden');
@@ -88,9 +93,14 @@
 	{{end}}
 	<div id="diff-container">
 		{{if $showFileTree}}
-			<div id="diff-file-tree" class="tw-hidden not-mobile"></div>
+			{{if $pierreTree}}
+				<div id="pierre-diff-file-tree" class="tw-hidden not-mobile" data-pierre-forgejo-file-tree="1">{{$pierreTree}}</div>
+			{{else}}
+				<div id="diff-file-tree" class="tw-hidden not-mobile"></div>
+			{{end}}
 			<script>
-				if (diffTreeVisible) document.getElementById('diff-file-tree').classList.remove('tw-hidden');
+				const diffTree = {{if $pierreTree}}document.querySelector('[data-pierre-forgejo-file-tree="1"]'){{else}}document.getElementById('diff-file-tree'){{end}};
+				if (diffTreeVisible) diffTree?.classList.remove('tw-hidden');
 			</script>
 		{{end}}
 		<div id="diff-content-container">

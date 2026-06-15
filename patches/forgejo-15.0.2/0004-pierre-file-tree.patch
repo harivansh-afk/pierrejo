@@ -1,0 +1,175 @@
+diff --git a/modules/templates/helper.go b/modules/templates/helper.go
+index ea9718f..23b0603 100644
+--- a/modules/templates/helper.go
++++ b/modules/templates/helper.go
+@@ -217,6 +217,7 @@ func NewFuncMap() template.FuncMap {
+ 		"IsMultilineCommitMessage": IsMultilineCommitMessage,
+ 		"CommentMustAsDiff":        gitdiff.CommentMustAsDiff,
+ 		"PierreDiff":               gitdiff.PierreDiff,
++		"PierreFileTree":           gitdiff.PierreFileTree,
+ 		"MirrorRemoteAddress":      mirrorRemoteAddress,
+ 
+ 		"FilenameIsImage": FilenameIsImage,
+diff --git a/services/gitdiff/pierre_tree.go b/services/gitdiff/pierre_tree.go
+new file mode 100644
+index 0000000..0f7a777
+--- /dev/null
++++ b/services/gitdiff/pierre_tree.go
+@@ -0,0 +1,129 @@
++// Copyright 2026 The Forgejo Authors. All rights reserved.
++// SPDX-License-Identifier: MIT
++
++package gitdiff
++
++import (
++	"bytes"
++	"context"
++	"encoding/json"
++	"html/template"
++	"io"
++	"net/http"
++	"strings"
++)
++
++type pierreTreeStatus struct {
++	Path   string `json:"path"`
++	Status string `json:"status"`
++}
++
++type pierreTreeRequest struct {
++	ID        string             `json:"id"`
++	Paths     []string           `json:"paths"`
++	GitStatus []pierreTreeStatus `json:"gitStatus"`
++	Selected  string             `json:"selected,omitempty"`
++	Theme     string             `json:"theme"`
++}
++
++// pierreDiffStatus maps a Forgejo DiffFileType to a Pierre git status keyword.
++// Pierre has no "copied" status; a copied file is a new file, so it maps to
++// "added" (same green treatment the native tree used for copies).
++func pierreDiffStatus(t DiffFileType) string {
++	switch t {
++	case DiffFileAdd:
++		return "added"
++	case DiffFileChange:
++		return "modified"
++	case DiffFileDel:
++		return "deleted"
++	case DiffFileRename:
++		return "renamed"
++	case DiffFileCopy:
++		return "added"
++	default:
++		return ""
++	}
++}
++
++// PierreFileTree returns a server-rendered Pierre file tree (declarative shadow
++// DOM) for a Forgejo diff's file list. It returns "" when the sidecar is
++// unavailable or produces nothing, so the template can fall back to Forgejo's
++// native file tree.
++func PierreFileTree(files []*DiffFile, theme string) template.HTML {
++	if len(files) == 0 {
++		return ""
++	}
++
++	paths := make([]string, 0, len(files))
++	status := make([]pierreTreeStatus, 0, len(files))
++	for _, file := range files {
++		if file == nil || file.Name == "" {
++			continue
++		}
++		paths = append(paths, file.Name)
++		if s := pierreDiffStatus(file.Type); s != "" {
++			status = append(status, pierreTreeStatus{Path: file.Name, Status: s})
++		}
++	}
++	if len(paths) == 0 {
++		return ""
++	}
++
++	html, ok := pierreTreeRender("pierre-file-tree", paths, status, "", theme)
++	if !ok {
++		return ""
++	}
++	return html
++}
++
++func pierreTreeRender(id string, paths []string, status []pierreTreeStatus, selected, theme string) (template.HTML, bool) {
++	socketPath := pierreSocketPath()
++	if socketPath == "" || len(paths) == 0 {
++		return "", false
++	}
++
++	payload, err := json.Marshal(pierreTreeRequest{
++		ID:        id,
++		Paths:     paths,
++		GitStatus: status,
++		Selected:  selected,
++		Theme:     theme,
++	})
++	if err != nil {
++		return "", false
++	}
++
++	ctx, cancel := context.WithTimeout(context.Background(), pierreRenderTimeout)
++	defer cancel()
++
++	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://pierre-ssr/tree", bytes.NewReader(payload))
++	if err != nil {
++		return "", false
++	}
++	req.Header.Set("Content-Type", "application/json")
++	req.Header.Set("Idempotency-Key", pierreRequestKey("tree", id, theme, selected, strings.Join(paths, "\x00")))
++
++	resp, err := getPierreClient(socketPath).Do(req)
++	if err != nil {
++		return "", false
++	}
++	defer resp.Body.Close()
++	if resp.StatusCode != http.StatusOK {
++		return "", false
++	}
++
++	body, err := io.ReadAll(resp.Body)
++	if err != nil {
++		return "", false
++	}
++
++	var out pierreRenderResponse
++	if err := json.Unmarshal(body, &out); err != nil {
++		return "", false
++	}
++	if out.HTML == "" {
++		return "", false
++	}
++	return template.HTML(out.HTML), true
++}
+diff --git a/web_src/js/features/file-fold.js b/web_src/js/features/file-fold.js
+index 3efefaf..66a0766 100644
+--- a/web_src/js/features/file-fold.js
++++ b/web_src/js/features/file-fold.js
+@@ -17,3 +17,10 @@ export function setFileFolding(fileContentBox, foldArrow, newFold) {
+ export function invertFileFolding(fileContentBox, foldArrow) {
+   setFileFolding(fileContentBox, foldArrow, fileContentBox.getAttribute('data-folded') !== 'true');
+ }
++
++// pierrejo: expose folding so the Pierre file-tree hydration bridge can expand
++// the selected diff box on tree selection / hashchange, exactly like the
++// native DiffFileTree.vue component did.
++if (typeof window !== 'undefined') {
++  window._pierreSetFileFolding = setFileFolding;
++}
+diff --git a/web_src/js/features/repo-diff-filetree.js b/web_src/js/features/repo-diff-filetree.js
+index 85dec40..bb8d8c8 100644
+--- a/web_src/js/features/repo-diff-filetree.js
++++ b/web_src/js/features/repo-diff-filetree.js
+@@ -4,6 +4,8 @@ export async function initDiffFileTree() {
+   const el = document.getElementById('diff-file-tree');
+   if (!el) return;
+ 
++  if (el.getAttribute('data-pierre-forgejo-file-tree') === '1') return;
++
+   const {default: DiffFileTree} = await import(/* webpackChunkName: "diff-file-tree" */'../components/DiffFileTree.vue');
+   const fileTreeView = createApp(DiffFileTree);
+   fileTreeView.mount(el);

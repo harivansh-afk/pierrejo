@@ -2,6 +2,24 @@
   overflow-x: auto;
 }
 
+[data-pierre-forgejo-file-tree="1"] {
+  flex: 0 0 20%;
+  max-width: 380px;
+  height: calc(100vh - 47px);
+  max-height: calc(100vh - 47px);
+  padding-top: 0;
+  overflow-y: auto;
+  line-height: inherit;
+  position: sticky;
+  top: 47px;
+}
+
+[data-pierre-forgejo-file-tree="1"] file-tree-container {
+  display: block;
+  height: 100%;
+  max-height: 100%;
+}
+
 .pierre-forgejo-diff pre,
 .pierre-forgejo-diff code {
   font-family: var(--fonts-monospace);

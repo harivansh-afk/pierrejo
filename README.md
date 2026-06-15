@@ -2,7 +2,9 @@
 
 Pierre diffs for Forgejo.
 
-pierrejo packages the Forgejo integration layer for @pierre/diffs: a server-side rendering sidecar, the browser hydration bridge, Forgejo patches, and the diff template override needed to render Pierre diffs inside Forgejo pull request pages.
+pierrejo packages the Forgejo integration layer for @pierre/diffs and @pierre/trees: a server-side rendering sidecar, the browser hydration bridge, Forgejo patches, and the template override needed to render Pierre diffs inside Forgejo pull request pages.
+
+The pull request / commit diff file tree can be rendered by @pierre/trees. When the sidecar prerenders the tree, pierre-forgejo.js hydrates the `data-pierre-forgejo-file-tree` markup; when it cannot, Forgejo's native Vue tree mounts into `#diff-file-tree` as the fallback.
 
 ## Outputs
 

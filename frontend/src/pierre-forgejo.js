@@ -1,7 +1,9 @@
 import { hydratePierreDiffs } from "./pierre/diff-view.js";
+import { hydratePierreFileTrees } from "./pierre/file-tree.js";
 
 function init() {
   hydratePierreDiffs();
+  hydratePierreFileTrees();
 }
 
 if (document.readyState === "loading") {
