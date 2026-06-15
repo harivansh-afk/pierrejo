@@ -5,6 +5,7 @@ import { treeUnsafeCss } from "./tree-theme.js";
 const CONTAINER_SELECTOR = '[data-pierre-forgejo-file-tree="1"]';
 const TREE_ID = "pierre-file-tree";
 const STORAGE_KEY = "diff_file_tree_visible";
+const ACTIVE_FILE_TOP_OFFSET = 120;
 
 const DIFF_TYPE_STATUS = {
   1: "added",
@@ -61,6 +62,10 @@ function pathFromHash(state) {
   return state.pathByAnchor.get(window.location.hash) ?? null;
 }
 
+function pathFromDiffBox(state, box) {
+  return box?.id ? state.pathByAnchor.get("#" + box.id) ?? null : null;
+}
+
 function expandDiffBox(anchor) {
   const box = anchor ? document.querySelector(anchor) : null;
   if (!box || box.getAttribute("data-folded") !== "true") return;
@@ -87,9 +92,8 @@ function navigateToFile(controller, path) {
   }
 }
 
-function selectFromHash(controller) {
-  const path = pathFromHash(controller.state);
-  if (!path || !controller.tree) return;
+function selectTreePath(controller, path) {
+  if (!path || !controller.tree) return false;
 
   controller.suppressSelection = true;
   try {
@@ -98,13 +102,53 @@ function selectFromHash(controller) {
     }
     controller.tree.getItem(path)?.select();
     controller.tree.scrollToPath(path, { focus: false, offset: "nearest" });
+    return true;
   } catch (error) {
     console.warn("Pierre file tree selection failed", error);
+    return false;
   } finally {
     controller.suppressSelection = false;
   }
+}
+
+function selectFromHash(controller) {
+  const path = pathFromHash(controller.state);
+  if (!selectTreePath(controller, path)) return false;
 
   expandDiffBox(controller.state.anchorByPath.get(path));
+  return true;
+}
+
+function activeDiffPath(controller) {
+  const boxes = document.querySelectorAll(".diff-file-box[id]");
+  let activePath = null;
+  let firstVisiblePath = null;
+
+  for (const box of boxes) {
+    const path = pathFromDiffBox(controller.state, box);
+    if (!path) continue;
+
+    const rect = box.getBoundingClientRect();
+    if (rect.height === 0 || rect.bottom <= 0) continue;
+    if (firstVisiblePath === null && rect.top < window.innerHeight) firstVisiblePath = path;
+    if (rect.top <= ACTIVE_FILE_TOP_OFFSET) activePath = path;
+    else break;
+  }
+
+  return activePath ?? firstVisiblePath;
+}
+
+function syncSelectionFromScroll(controller) {
+  if (!controller.tree || !isVisible(controller.container)) return;
+  selectTreePath(controller, activeDiffPath(controller));
+}
+
+function scheduleScrollSelectionSync(controller) {
+  if (controller.selectionFrame !== null) return;
+  controller.selectionFrame = requestAnimationFrame(() => {
+    controller.selectionFrame = null;
+    syncSelectionFromScroll(controller);
+  });
 }
 
 function toggleElement(el, show) {
@@ -178,7 +222,7 @@ function mountTree(controller) {
 
   controller.tree = tree;
   controller.container.dataset.pierreForgejoHydrated = "1";
-  selectFromHash(controller);
+  if (!selectFromHash(controller)) syncSelectionFromScroll(controller);
 }
 
 function resyncTree(controller) {
@@ -191,7 +235,7 @@ function resyncTree(controller) {
     controller.tree.resetPaths(nextState.paths);
     controller.tree.setGitStatus(nextState.gitStatus);
     controller.state = nextState;
-    selectFromHash(controller);
+    if (!selectFromHash(controller)) syncSelectionFromScroll(controller);
   } catch (error) {
     console.warn("Pierre file tree resync failed", error);
   }
@@ -203,6 +247,7 @@ function createController(container) {
     abortController,
     button: document.querySelector(".diff-toggle-file-tree-button"),
     container,
+    selectionFrame: null,
     state: collectFiles(),
     suppressSelection: false,
     tree: null,
@@ -214,13 +259,32 @@ function createController(container) {
     { signal: abortController.signal },
   );
   window.addEventListener("hashchange", () => selectFromHash(controller), { signal: abortController.signal });
+  window.addEventListener("scroll", () => scheduleScrollSelectionSync(controller), {
+    passive: true,
+    signal: abortController.signal,
+  });
+  window.addEventListener("resize", () => scheduleScrollSelectionSync(controller), {
+    passive: true,
+    signal: abortController.signal,
+  });
 
   const boxes = document.getElementById("diff-file-boxes");
   if (boxes) {
-    const observer = new MutationObserver(() => resyncTree(controller));
+    const observer = new MutationObserver(() => {
+      resyncTree(controller);
+      scheduleScrollSelectionSync(controller);
+    });
     observer.observe(boxes, { childList: true });
     abortController.signal.addEventListener("abort", () => observer.disconnect(), { once: true });
   }
+
+  abortController.signal.addEventListener(
+    "abort",
+    () => {
+      if (controller.selectionFrame !== null) cancelAnimationFrame(controller.selectionFrame);
+    },
+    { once: true },
+  );
 
   return controller;
 }
