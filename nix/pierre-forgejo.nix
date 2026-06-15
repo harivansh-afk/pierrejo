@@ -65,6 +65,13 @@ let
 
   patches = corePatches ++ fileViewPatches;
 
+  patchBundledForgejoAssets = ''
+    substituteInPlace "$data/public/assets/js/index.js" \
+      --replace-fail \
+        'const We=document.getElementById("diff-file-tree");if(!We)return;' \
+        'const We=document.getElementById("diff-file-tree");if(!We||We.getAttribute("data-pierre-forgejo-file-tree")==="1")return;'
+  '';
+
   assets =
     pkgs.runCommand "pierrejo-forgejo-assets" { } ''
       mkdir -p $out/css
@@ -95,6 +102,7 @@ in
         forgejoPackage:
         forgejoPackage.overrideAttrs (old: {
           patches = (old.patches or [ ]) ++ corePatches ++ pkgs.lib.optionals fileView fileViewPatches;
+          postInstall = (old.postInstall or "") + "\n" + patchBundledForgejoAssets;
         });
     in
     if pkgs.lib.isDerivation arg then mkWithOptions { } arg else mkWithOptions arg;

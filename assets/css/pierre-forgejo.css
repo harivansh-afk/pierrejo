@@ -2,11 +2,11 @@
   overflow-x: auto;
 }
 
-#diff-file-tree[data-pierre-forgejo-file-tree="1"] {
+[data-pierre-forgejo-file-tree="1"] {
   overflow: hidden;
 }
 
-#diff-file-tree[data-pierre-forgejo-file-tree="1"] file-tree-container {
+[data-pierre-forgejo-file-tree="1"] file-tree-container {
   display: block;
   height: 100%;
   max-height: calc(100vh - 47px);

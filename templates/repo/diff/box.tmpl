@@ -93,9 +93,14 @@
 	{{end}}
 	<div id="diff-container">
 		{{if $showFileTree}}
-			<div id="diff-file-tree" class="tw-hidden not-mobile"{{if $pierreTree}} data-pierre-forgejo-file-tree="1"{{end}}>{{$pierreTree}}</div>
+			{{if $pierreTree}}
+				<div id="pierre-diff-file-tree" class="tw-hidden not-mobile" data-pierre-forgejo-file-tree="1">{{$pierreTree}}</div>
+			{{else}}
+				<div id="diff-file-tree" class="tw-hidden not-mobile"></div>
+			{{end}}
 			<script>
-				if (diffTreeVisible) document.getElementById('diff-file-tree').classList.remove('tw-hidden');
+				const diffTree = {{if $pierreTree}}document.querySelector('[data-pierre-forgejo-file-tree="1"]'){{else}}document.getElementById('diff-file-tree'){{end}};
+				if (diffTreeVisible) diffTree?.classList.remove('tw-hidden');
 			</script>
 		{{end}}
 		<div id="diff-content-container">

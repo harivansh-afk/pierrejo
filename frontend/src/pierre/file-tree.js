@@ -2,7 +2,7 @@ import { FileTree } from "@pierre/trees";
 import { forgejoThemeType } from "./options.js";
 import { treeUnsafeCss } from "./tree-theme.js";
 
-const CONTAINER_ID = "diff-file-tree";
+const CONTAINER_SELECTOR = '[data-pierre-forgejo-file-tree="1"]';
 const TREE_ID = "pierre-file-tree";
 const STORAGE_KEY = "pierre_diff_file_tree_visible";
 
@@ -231,8 +231,8 @@ function cleanupActiveTree() {
 }
 
 export function hydratePierreFileTrees() {
-  const container = document.getElementById(CONTAINER_ID);
-  if (!container || container.dataset.pierreForgejoFileTree !== "1") return;
+  const container = document.querySelector(CONTAINER_SELECTOR);
+  if (!container) return;
 
   if (activeTree?.container === container) {
     setTreeVisible(activeTree, storedTreeVisible());
