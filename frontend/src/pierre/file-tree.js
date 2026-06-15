@@ -147,6 +147,7 @@ function treeOptions(controller) {
     paths: controller.state.paths,
     gitStatus: controller.state.gitStatus,
     flattenEmptyDirectories: true,
+    presorted: true,
     initialExpansion: "open",
     initialVisibleRowCount: 200,
     icons: { set: "standard", colored: true },
