@@ -6,6 +6,7 @@ const CONTAINER_SELECTOR = '[data-pierre-forgejo-file-tree="1"]';
 const TREE_ID = "pierre-file-tree";
 const STORAGE_KEY = "diff_file_tree_visible";
 const ACTIVE_FILE_TOP_OFFSET = 120;
+const TREE_ICONS = { set: "complete", colored: true };
 
 const DIFF_TYPE_STATUS = {
   1: "added",
@@ -194,7 +195,7 @@ function treeOptions(controller) {
     presorted: true,
     initialExpansion: "open",
     initialVisibleRowCount: 200,
-    icons: { set: "minimal", colored: false },
+    icons: TREE_ICONS,
     unsafeCSS: treeUnsafeCss(forgejoThemeType()),
     onSelectionChange(paths) {
       if (controller.suppressSelection) return;
@@ -202,6 +203,10 @@ function treeOptions(controller) {
       if (path) navigateToFile(controller, path);
     },
   };
+}
+
+function hasPreloadedTree(host) {
+  return Boolean(host.shadowRoot?.querySelector("[data-file-tree-virtualized-wrapper='true']"));
 }
 
 function mountTree(controller) {
@@ -213,7 +218,11 @@ function mountTree(controller) {
   const tree = new FileTree(treeOptions(controller));
   const host = controller.container.querySelector("file-tree-container");
   if (host) {
-    tree.hydrate({ fileTreeContainer: host });
+    if (hasPreloadedTree(host)) {
+      tree.hydrate({ fileTreeContainer: host });
+    } else {
+      tree.render({ fileTreeContainer: host });
+    }
   } else {
     const fallbackHost = document.createElement("file-tree-container");
     controller.container.append(fallbackHost);
