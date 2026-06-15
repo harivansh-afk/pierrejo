@@ -24,7 +24,7 @@ let
     pname = "pierrejo-frontend";
     version = "0.1.0";
     src = withTheme "frontend" (root + "/frontend") "src/pierre/themes";
-    npmDepsHash = "sha256-wIyJ3Af65p615GqhbxUbvetOlOTe1Rg75oYAsQnLvPA=";
+    npmDepsHash = "sha256-ybqIh9Uj4plBOB4Xgjm9K9EgxnOyDwQ9kHEPzz6wVEU=";
     installPhase = ''
       runHook preInstall
       mkdir -p $out/js
@@ -38,7 +38,7 @@ let
     pname = "pierrejo-ssr";
     version = "0.1.0";
     src = withTheme "ssr" (root + "/ssr") "themes";
-    npmDepsHash = "sha256-fIj9bUjAYvnIe2o1IT9l9wr8tn1MtomNKb/dvLYfiGQ=";
+    npmDepsHash = "sha256-+E01bAkiqIrN1hlr3Qsjvg2rveW1ofUBf83bBZGNcGM=";
     dontNpmBuild = true;
     nativeBuildInputs = [
       pkgs.makeWrapper
@@ -56,6 +56,7 @@ let
   corePatches = [
     (root + "/patches/forgejo-15.0.2/0001-pierre-ssr-highlighting.patch")
     (root + "/patches/forgejo-15.0.2/0002-expose-init-globals.patch")
+    (root + "/patches/forgejo-15.0.2/0003-pierre-file-tree.patch")
   ];
 
   fileViewPatches = [

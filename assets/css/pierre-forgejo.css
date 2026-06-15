@@ -2,6 +2,24 @@
   overflow-x: auto;
 }
 
+/*
+ * Pierre diff file tree. Forgejo already makes #diff-file-tree a sticky,
+ * height-bounded (max-height: calc(100vh - 47px)), 20%-wide flex column with
+ * overflow-y:auto. We hand scrolling to Pierre's own virtualized container and
+ * let the custom element fill that bounded height so virtualization measures a
+ * definite viewport. Without `display:block` the custom element would be
+ * inline and collapse.
+ */
+#diff-file-tree[data-pierre-forgejo-file-tree="1"] {
+  overflow: hidden;
+}
+
+#diff-file-tree[data-pierre-forgejo-file-tree="1"] file-tree-container {
+  display: block;
+  height: 100%;
+  max-height: calc(100vh - 47px);
+}
+
 .pierre-forgejo-diff pre,
 .pierre-forgejo-diff code {
   font-family: var(--fonts-monospace);

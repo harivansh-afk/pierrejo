@@ -1,4 +1,6 @@
 {{$showFileTree := (and (not .DiffNotAvailable) (gt .Diff.NumFiles 1))}}
+{{$pierreTheme := "system"}}
+{{if $.IsSigned}}{{$pierreTheme = $.SignedUser.Theme}}{{end}}
 <div>
 	<div class="diff-detail-box diff-box">
 		<div class="tw-flex tw-items-center tw-flex-wrap tw-gap-2 tw-ml-0.5">
@@ -88,7 +90,13 @@
 	{{end}}
 	<div id="diff-container">
 		{{if $showFileTree}}
-			<div id="diff-file-tree" class="tw-hidden not-mobile"></div>
+			{{/*
+				Pierre file tree: server-rendered by the pierre-ssr sidecar as
+				declarative shadow DOM and hydrated by pierre-forgejo.js. If the
+				sidecar is unavailable PierreFileTree returns "", and the bridge
+				falls back to client-side mounting from the diff-file-box DOM.
+			*/}}
+			<div id="diff-file-tree" class="tw-hidden not-mobile" data-pierre-forgejo-file-tree="1">{{PierreFileTree .Diff.Files $pierreTheme}}</div>
 			<script>
 				if (diffTreeVisible) document.getElementById('diff-file-tree').classList.remove('tw-hidden');
 			</script>
@@ -114,7 +122,7 @@
 					{{$showFileViewToggle := or $isImage (and (not $file.IsIncomplete) $isCsv)}}
 					{{$isExpandable := or (gt $file.Addition 0) (gt $file.Deletion 0) $file.IsBin}}
 					{{$isReviewFile := and $.IsSigned $.PageIsPullFiles (not $.IsArchived) $.IsShowingAllCommits}}
-					<div class="diff-file-box diff-box file-content {{TabSizeClass $.Editorconfig $file.Name}} tw-mt-0" id="diff-{{$file.NameHash}}" data-old-filename="{{$file.OldName}}" data-new-filename="{{$file.Name}}" {{if or ($file.ShouldBeHidden) (not $isExpandable)}}data-folded="true"{{end}}>
+					<div class="diff-file-box diff-box file-content {{TabSizeClass $.Editorconfig $file.Name}} tw-mt-0" id="diff-{{$file.NameHash}}" data-old-filename="{{$file.OldName}}" data-new-filename="{{$file.Name}}" data-pierre-type="{{$file.Type}}" {{if or ($file.ShouldBeHidden) (not $isExpandable)}}data-folded="true"{{end}}>
 						<h4 class="diff-file-header sticky-2nd-row ui top attached header tw-font-normal tw-flex tw-items-center tw-justify-between tw-flex-wrap">
 							<div class="diff-file-name tw-flex tw-flex-1 tw-items-center tw-gap-1 tw-flex-wrap">
 								<button class="fold-file btn interact-bg tw-p-1{{if not $isExpandable}} tw-invisible{{end}}">

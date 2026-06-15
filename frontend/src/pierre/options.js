@@ -1,6 +1,6 @@
 import { pierreThemeNames } from "./theme.js";
 
-function forgejoThemeType() {
+export function forgejoThemeType() {
   const theme = document.documentElement.dataset.theme ?? document.body?.dataset.theme ?? "";
 
   if (theme.endsWith("-dark") || theme === "dark") return "dark";

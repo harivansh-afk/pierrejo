@@ -4,6 +4,8 @@ import { createServer } from "node:http";
 import { dirname, join } from "node:path";
 import { registerCustomTheme } from "@pierre/diffs";
 import { preloadPatchDiff } from "@pierre/diffs/ssr";
+import { themeToTreeStyles } from "@pierre/trees";
+import { preloadFileTree, serializeFileTreeSsrPayload } from "@pierre/trees/ssr";
 import { createHighlighter, createJavaScriptRegexEngine } from "shiki";
 import { pierreThemeNames, pierreThemes } from "./theme.js";
 
@@ -157,15 +159,92 @@ async function render(payload) {
   return out;
 }
 
+// Convert a themeToTreeStyles() object into a CSS declaration list. camelCase
+// keys (colorScheme, backgroundColor, ...) become kebab-case CSS properties;
+// custom properties (--trees-theme-*) are emitted verbatim. This MUST stay
+// byte-identical to the frontend tree-theme.js so the SSR shadow DOM and the
+// client hydration produce the same <style> and Pierre does not re-flow.
+function treeStyleDeclarations(styles) {
+  return Object.entries(styles)
+    .map(([key, value]) => {
+      const property = key.startsWith("--") ? key : key.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase());
+      return property + ":" + value;
+    })
+    .join(";");
+}
+
+function treeThemeInput(theme, type) {
+  return {
+    type,
+    bg: theme.colors?.["editor.background"],
+    fg: theme.colors?.["editor.foreground"],
+    colors: theme.colors,
+  };
+}
+
+function treeUnsafeCss(themeType) {
+  const light = treeStyleDeclarations(themeToTreeStyles(treeThemeInput(cozyboxLight, "light")));
+  const dark = treeStyleDeclarations(themeToTreeStyles(treeThemeInput(cozyboxDark, "dark")));
+  if (themeType === "dark") return ":host{" + dark + "}";
+  if (themeType === "light") return ":host{" + light + "}";
+  return ":host{" + light + "}@media (prefers-color-scheme:dark){:host{" + dark + "}}";
+}
+
+function treeOptions(payload) {
+  const paths = Array.isArray(payload.paths) ? payload.paths.filter((p) => typeof p === "string" && p) : [];
+  const gitStatus = Array.isArray(payload.gitStatus)
+    ? payload.gitStatus.filter((entry) => entry && typeof entry.path === "string" && typeof entry.status === "string")
+    : [];
+  const selected = typeof payload.selected === "string" && payload.selected ? [payload.selected] : [];
+  return {
+    id: typeof payload.id === "string" && payload.id ? payload.id : "file-tree",
+    paths,
+    gitStatus,
+    initialSelectedPaths: selected,
+    initialExpansion: "open",
+    initialVisibleRowCount: 200,
+    icons: { set: "standard", colored: true },
+    unsafeCSS: treeUnsafeCss(forgejoThemeType(payload.theme)),
+  };
+}
+
+async function renderTree(payload) {
+  const options = treeOptions(payload);
+  if (options.paths.length === 0) return { html: "" };
+
+  const key = createHash("sha256")
+    .update(JSON.stringify({ tree: options, version: 1 }))
+    .digest("hex");
+  const path = cachePath(key);
+
+  try {
+    return JSON.parse(await readFile(path, "utf8"));
+  } catch {
+  }
+
+  const out = { html: serializeFileTreeSsrPayload(preloadFileTree(options), "declarative") };
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, JSON.stringify(out));
+  return out;
+}
+
 const server = createServer(async (request, response) => {
-  if (request.method !== "POST" || !["/tokenize", "/render"].includes(request.url)) {
+  if (request.method !== "POST" || !["/tokenize", "/render", "/tree"].includes(request.url)) {
     sendJson(response, 404, { error: "not found" });
     return;
   }
 
   try {
     const payload = JSON.parse(await requestBody(request));
-    sendJson(response, 200, request.url === "/render" ? await render(payload) : await tokenize(payload));
+    let result;
+    if (request.url === "/render") {
+      result = await render(payload);
+    } else if (request.url === "/tree") {
+      result = await renderTree(payload);
+    } else {
+      result = await tokenize(payload);
+    }
+    sendJson(response, 200, result);
   } catch (error) {
     sendJson(response, error.statusCode ?? 500, { error: error.message });
   }
