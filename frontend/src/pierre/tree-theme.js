@@ -1,14 +1,9 @@
 import { themeToTreeStyles } from "@pierre/trees";
-import cozyboxDark from "./themes/cozybox-dark.json" with { type: "json" };
-import cozyboxLight from "./themes/cozybox-light.json" with { type: "json" };
+import { pierreThemes } from "./theme.js";
 
-// Convert a themeToTreeStyles() object into a CSS declaration list. camelCase
-// keys (colorScheme, backgroundColor, ...) become kebab-case CSS properties;
-// custom properties (--trees-theme-*) are emitted verbatim.
-//
-// This MUST stay byte-identical to ssr/server.js treeUnsafeCss so the SSR
-// shadow DOM <style data-file-tree-unsafe-css> and the value we pass to
-// FileTree.hydrate() match exactly and Pierre does not re-flow on hydrate.
+const TREE_CHROME_CSS =
+  "button[data-item-type='folder'][data-item-contains-git-change] [data-item-section='git']{display:none}";
+
 function treeStyleDeclarations(styles) {
   return Object.entries(styles)
     .map(([key, value]) => {
@@ -28,9 +23,9 @@ function treeThemeInput(theme, type) {
 }
 
 export function treeUnsafeCss(themeType) {
-  const light = treeStyleDeclarations(themeToTreeStyles(treeThemeInput(cozyboxLight, "light")));
-  const dark = treeStyleDeclarations(themeToTreeStyles(treeThemeInput(cozyboxDark, "dark")));
-  if (themeType === "dark") return ":host{" + dark + "}";
-  if (themeType === "light") return ":host{" + light + "}";
-  return ":host{" + light + "}@media (prefers-color-scheme:dark){:host{" + dark + "}}";
+  const light = treeStyleDeclarations(themeToTreeStyles(treeThemeInput(pierreThemes.light, "light")));
+  const dark = treeStyleDeclarations(themeToTreeStyles(treeThemeInput(pierreThemes.dark, "dark")));
+  if (themeType === "dark") return ":host{" + dark + "}" + TREE_CHROME_CSS;
+  if (themeType === "light") return ":host{" + light + "}" + TREE_CHROME_CSS;
+  return ":host{" + light + "}@media (prefers-color-scheme:dark){:host{" + dark + "}}" + TREE_CHROME_CSS;
 }

@@ -9,6 +9,8 @@ import { preloadFileTree, serializeFileTreeSsrPayload } from "@pierre/trees/ssr"
 import { createHighlighter, createJavaScriptRegexEngine } from "shiki";
 import { pierreThemeNames, pierreThemes } from "./theme.js";
 
+const TREE_CHROME_CSS =
+  "button[data-item-type='folder'][data-item-contains-git-change] [data-item-section='git']{display:none}";
 const socketPath = process.env.PIERRE_SSR_SOCKET ?? "/run/pierre-ssr/pierre.sock";
 const cacheDir = process.env.PIERRE_SSR_CACHE_DIR ?? "/var/cache/pierre-ssr";
 const maxBodyBytes = Number(process.env.PIERRE_SSR_MAX_BODY_BYTES ?? 16 * 1024 * 1024);
@@ -159,11 +161,6 @@ async function render(payload) {
   return out;
 }
 
-// Convert a themeToTreeStyles() object into a CSS declaration list. camelCase
-// keys (colorScheme, backgroundColor, ...) become kebab-case CSS properties;
-// custom properties (--trees-theme-*) are emitted verbatim. This MUST stay
-// byte-identical to the frontend tree-theme.js so the SSR shadow DOM and the
-// client hydration produce the same <style> and Pierre does not re-flow.
 function treeStyleDeclarations(styles) {
   return Object.entries(styles)
     .map(([key, value]) => {
@@ -183,11 +180,11 @@ function treeThemeInput(theme, type) {
 }
 
 function treeUnsafeCss(themeType) {
-  const light = treeStyleDeclarations(themeToTreeStyles(treeThemeInput(cozyboxLight, "light")));
-  const dark = treeStyleDeclarations(themeToTreeStyles(treeThemeInput(cozyboxDark, "dark")));
-  if (themeType === "dark") return ":host{" + dark + "}";
-  if (themeType === "light") return ":host{" + light + "}";
-  return ":host{" + light + "}@media (prefers-color-scheme:dark){:host{" + dark + "}}";
+  const light = treeStyleDeclarations(themeToTreeStyles(treeThemeInput(pierreThemes.light, "light")));
+  const dark = treeStyleDeclarations(themeToTreeStyles(treeThemeInput(pierreThemes.dark, "dark")));
+  if (themeType === "dark") return ":host{" + dark + "}" + TREE_CHROME_CSS;
+  if (themeType === "light") return ":host{" + light + "}" + TREE_CHROME_CSS;
+  return ":host{" + light + "}@media (prefers-color-scheme:dark){:host{" + dark + "}}" + TREE_CHROME_CSS;
 }
 
 function treeOptions(payload) {
@@ -196,17 +193,13 @@ function treeOptions(payload) {
     ? payload.gitStatus.filter((entry) => entry && typeof entry.path === "string" && typeof entry.status === "string")
     : [];
   const selected = typeof payload.selected === "string" && payload.selected ? [payload.selected] : [];
-  // The diff tree's element id must never be "diff-file-tree", or Forgejo's
-  // native initDiffFileTree() (getElementById('diff-file-tree')) would mount
-  // its Vue tree over ours. Normalize that id so the rendered
-  // <file-tree-container id> matches the client's TREE_ID ("pierre-file-tree").
-  let id = typeof payload.id === "string" && payload.id ? payload.id : "file-tree";
-  if (id === "diff-file-tree") id = "pierre-file-tree";
+  const id = typeof payload.id === "string" && payload.id ? payload.id : "pierre-file-tree";
   return {
     id,
     paths,
     gitStatus,
     initialSelectedPaths: selected,
+    flattenEmptyDirectories: true,
     initialExpansion: "open",
     initialVisibleRowCount: 200,
     icons: { set: "standard", colored: true },
@@ -219,7 +212,7 @@ async function renderTree(payload) {
   if (options.paths.length === 0) return { html: "" };
 
   const key = createHash("sha256")
-    .update(JSON.stringify({ tree: options, version: 1 }))
+    .update(JSON.stringify({ tree: options, version: 2 }))
     .digest("hex");
   const path = cachePath(key);
 

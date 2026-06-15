@@ -66,8 +66,8 @@ index 0000000..0f7a777
 +
 +// PierreFileTree returns a server-rendered Pierre file tree (declarative shadow
 +// DOM) for a Forgejo diff's file list. It returns "" when the sidecar is
-+// unavailable or produces nothing, so the template degrades to client-side
-+// mounting.
++// unavailable or produces nothing, so the template can fall back to Forgejo's
++// native file tree.
 +func PierreFileTree(files []*DiffFile, theme string) template.HTML {
 +	if len(files) == 0 {
 +		return ""
@@ -164,17 +164,12 @@ diff --git a/web_src/js/features/repo-diff-filetree.js b/web_src/js/features/rep
 index 85dec40..bb8d8c8 100644
 --- a/web_src/js/features/repo-diff-filetree.js
 +++ b/web_src/js/features/repo-diff-filetree.js
-@@ -4,6 +4,13 @@ export async function initDiffFileTree() {
+@@ -4,6 +4,8 @@ export async function initDiffFileTree() {
    const el = document.getElementById('diff-file-tree');
    if (!el) return;
  
-+  // pierrejo: the diff file tree is rendered server-side by the Pierre SSR
-+  // sidecar and hydrated by pierre-forgejo.js. Mounting the native Vue tree
-+  // here would replace the SSR'd <file-tree-container> in #diff-file-tree, so
-+  // it is disabled. Removing this avoids loading the diff-file-tree chunk too.
-+  return;
++  if (el.getAttribute('data-pierre-forgejo-file-tree') === '1') return;
 +
-+  // eslint-disable-next-line no-unreachable
    const {default: DiffFileTree} = await import(/* webpackChunkName: "diff-file-tree" */'../components/DiffFileTree.vue');
    const fileTreeView = createApp(DiffFileTree);
    fileTreeView.mount(el);

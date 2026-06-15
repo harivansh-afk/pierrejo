@@ -56,7 +56,7 @@ let
   corePatches = [
     (root + "/patches/forgejo-15.0.2/0001-pierre-ssr-highlighting.patch")
     (root + "/patches/forgejo-15.0.2/0002-expose-init-globals.patch")
-    (root + "/patches/forgejo-15.0.2/0003-pierre-file-tree.patch")
+    (root + "/patches/forgejo-15.0.2/0004-pierre-file-tree.patch")
   ];
 
   fileViewPatches = [

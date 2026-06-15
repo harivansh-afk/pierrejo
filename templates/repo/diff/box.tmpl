@@ -90,23 +90,10 @@
 	{{end}}
 	<div id="diff-container">
 		{{if $showFileTree}}
-			{{/*
-				Pierre file tree: server-rendered by the pierre-ssr sidecar as
-				declarative shadow DOM and hydrated by pierre-forgejo.js. If the
-				sidecar is unavailable PierreFileTree returns "", and the bridge
-				falls back to client-side mounting from the diff-file-box DOM.
-			*/}}
-			{{/*
-				Use a Pierre-specific id (not #diff-file-tree) so Forgejo's native
-				initDiffFileTree() — which does getElementById('diff-file-tree') and
-				returns early when absent — never mounts its Vue tree over our SSR
-				tree. nixpkgs builds Forgejo's own JS from unpatched source, so the
-				Vue tree cannot be disabled with a Forgejo-side patch; suppressing it
-				by id is robust and needs no patch.
-			*/}}
-			<div id="pierre-diff-file-tree" class="tw-hidden not-mobile" data-pierre-forgejo-file-tree="1">{{PierreFileTree .Diff.Files $pierreTheme}}</div>
+			{{$pierreTree := PierreFileTree .Diff.Files $pierreTheme}}
+			<div id="diff-file-tree" class="tw-hidden not-mobile"{{if $pierreTree}} data-pierre-forgejo-file-tree="1"{{end}}>{{$pierreTree}}</div>
 			<script>
-				if (diffTreeVisible) document.getElementById('pierre-diff-file-tree').classList.remove('tw-hidden');
+				if (diffTreeVisible) document.getElementById('diff-file-tree').classList.remove('tw-hidden');
 			</script>
 		{{end}}
 		<div id="diff-content-container">
@@ -130,7 +117,7 @@
 					{{$showFileViewToggle := or $isImage (and (not $file.IsIncomplete) $isCsv)}}
 					{{$isExpandable := or (gt $file.Addition 0) (gt $file.Deletion 0) $file.IsBin}}
 					{{$isReviewFile := and $.IsSigned $.PageIsPullFiles (not $.IsArchived) $.IsShowingAllCommits}}
-					<div class="diff-file-box diff-box file-content {{TabSizeClass $.Editorconfig $file.Name}} tw-mt-0" id="diff-{{$file.NameHash}}" data-old-filename="{{$file.OldName}}" data-new-filename="{{$file.Name}}" data-pierre-type="{{$file.Type}}" {{if or ($file.ShouldBeHidden) (not $isExpandable)}}data-folded="true"{{end}}>
+					<div class="diff-file-box diff-box file-content {{TabSizeClass $.Editorconfig $file.Name}} tw-mt-0" id="diff-{{$file.NameHash}}" data-old-filename="{{$file.OldName}}" data-new-filename="{{$file.Name}}" {{if or ($file.ShouldBeHidden) (not $isExpandable)}}data-folded="true"{{end}}>
 						<h4 class="diff-file-header sticky-2nd-row ui top attached header tw-font-normal tw-flex tw-items-center tw-justify-between tw-flex-wrap">
 							<div class="diff-file-name tw-flex tw-flex-1 tw-items-center tw-gap-1 tw-flex-wrap">
 								<button class="fold-file btn interact-bg tw-p-1{{if not $isExpandable}} tw-invisible{{end}}">
