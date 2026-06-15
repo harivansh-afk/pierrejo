@@ -94,15 +94,27 @@
 			window.config.pageData.diffFileInfo = diffFileInfo;
 		</script>
 	{{end}}
-	<div id="diff-container">
+	<div id="diff-container"{{if $showFileTree}} class="pierre-forgejo-diff-layout"{{end}}>
 		{{if $showFileTree}}
 			{{if $pierreTree}}
 				<div id="pierre-diff-file-tree" class="not-mobile" data-pierre-forgejo-file-tree="1"><script>
-					document.currentScript.parentElement.classList.toggle('tw-hidden', window.__pierreDiffTreeVisible === false);
+					(() => {
+						const diffTree = document.currentScript.parentElement;
+						const diffContainer = diffTree.parentElement;
+						const visible = window.__pierreDiffTreeVisible !== false;
+						diffTree.classList.toggle('tw-hidden', !visible);
+						diffContainer.classList.toggle('pierre-forgejo-tree-visible', visible);
+					})();
 				</script>{{$pierreTree}}</div>
 			{{else}}
 				<div id="diff-file-tree" class="not-mobile"><script>
-					document.currentScript.parentElement.classList.toggle('tw-hidden', window.__pierreDiffTreeVisible === false);
+					(() => {
+						const diffTree = document.currentScript.parentElement;
+						const diffContainer = diffTree.parentElement;
+						const visible = window.__pierreDiffTreeVisible !== false;
+						diffTree.classList.toggle('tw-hidden', !visible);
+						diffContainer.classList.toggle('pierre-forgejo-tree-visible', visible);
+					})();
 				</script></div>
 			{{end}}
 		{{end}}

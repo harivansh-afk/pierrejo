@@ -166,6 +166,7 @@ function storedTreeVisible() {
 
 function setTreeVisible(controller, visible) {
   const [showIcon, hideIcon] = controller.button?.querySelectorAll(".icon") ?? [];
+  controller.container.parentElement?.classList.toggle("pierre-forgejo-tree-visible", visible);
   controller.button?.setAttribute(
     "data-tooltip-content",
     controller.button.getAttribute(visible ? "data-hide-text" : "data-show-text"),
