@@ -13,13 +13,16 @@
 					{{svg "octicon-sidebar-expand" 20 "icon tw-hidden"}}
 				</button>
 				<script>
-					// Default to true if unset
-					const diffTreeStorageKey = 'diff_file_tree_visible';
-					const diffTreeVisible = localStorage?.getItem(diffTreeStorageKey) !== 'false';
-					const diffTreeBtn = document.querySelector('.diff-toggle-file-tree-button');
-					const diffTreeIcon = `.octicon-sidebar-${diffTreeVisible ? 'expand' : 'collapse'}`;
-					diffTreeBtn.querySelector(diffTreeIcon).classList.remove('tw-hidden');
-					diffTreeBtn.setAttribute('data-tooltip-content', diffTreeBtn.getAttribute(diffTreeVisible ? 'data-hide-text' : 'data-show-text'));
+					(() => {
+						// Default to true if unset.
+						const diffTreeStorageKey = 'diff_file_tree_visible';
+						const diffTreeVisible = localStorage?.getItem(diffTreeStorageKey) !== 'false';
+						window.__pierreDiffTreeVisible = diffTreeVisible;
+						const diffTreeBtn = document.querySelector('.diff-toggle-file-tree-button');
+						const diffTreeIcon = `.octicon-sidebar-${diffTreeVisible ? 'expand' : 'collapse'}`;
+						diffTreeBtn.querySelector(diffTreeIcon).classList.remove('tw-hidden');
+						diffTreeBtn.setAttribute('data-tooltip-content', diffTreeBtn.getAttribute(diffTreeVisible ? 'data-hide-text' : 'data-show-text'));
+					})();
 				</script>
 			{{end}}
 			{{if not .DiffNotAvailable}}
@@ -94,14 +97,14 @@
 	<div id="diff-container">
 		{{if $showFileTree}}
 			{{if $pierreTree}}
-				<div id="pierre-diff-file-tree" class="tw-hidden not-mobile" data-pierre-forgejo-file-tree="1">{{$pierreTree}}</div>
+				<div id="pierre-diff-file-tree" class="not-mobile" data-pierre-forgejo-file-tree="1"><script>
+					document.currentScript.parentElement.classList.toggle('tw-hidden', window.__pierreDiffTreeVisible === false);
+				</script>{{$pierreTree}}</div>
 			{{else}}
-				<div id="diff-file-tree" class="tw-hidden not-mobile"></div>
+				<div id="diff-file-tree" class="not-mobile"><script>
+					document.currentScript.parentElement.classList.toggle('tw-hidden', window.__pierreDiffTreeVisible === false);
+				</script></div>
 			{{end}}
-			<script>
-				const diffTree = {{if $pierreTree}}document.querySelector('[data-pierre-forgejo-file-tree="1"]'){{else}}document.getElementById('diff-file-tree'){{end}};
-				if (diffTreeVisible) diffTree?.classList.remove('tw-hidden');
-			</script>
 		{{end}}
 		<div id="diff-content-container">
 		{{if .IsShowingOnlySingleCommit}}
