@@ -12,6 +12,7 @@ import { pierreThemeNames, pierreThemes } from "./theme.js";
 const TREE_CHROME_CSS =
   ':host{--trees-font-family-override:"Berkeley Mono",var(--fonts-monospace,ui-monospace,Menlo,monospace)}' +
   "button[data-item-type='folder'][data-item-contains-git-change] [data-item-section='git']{display:none}";
+const TREE_ICONS = { set: "complete", colored: true };
 const socketPath = process.env.PIERRE_SSR_SOCKET ?? "/run/pierre-ssr/pierre.sock";
 const cacheDir = process.env.PIERRE_SSR_CACHE_DIR ?? "/var/cache/pierre-ssr";
 const maxBodyBytes = Number(process.env.PIERRE_SSR_MAX_BODY_BYTES ?? 16 * 1024 * 1024);
@@ -204,7 +205,7 @@ function treeOptions(payload) {
     presorted: true,
     initialExpansion: "open",
     initialVisibleRowCount: 200,
-    icons: { set: "minimal", colored: false },
+    icons: TREE_ICONS,
     unsafeCSS: treeUnsafeCss(forgejoThemeType(payload.theme)),
   };
 }
@@ -214,7 +215,7 @@ async function renderTree(payload) {
   if (options.paths.length === 0) return { html: "" };
 
   const key = createHash("sha256")
-    .update(JSON.stringify({ tree: options, version: 2 }))
+    .update(JSON.stringify({ tree: options, version: 3 }))
     .digest("hex");
   const path = cachePath(key);
 
