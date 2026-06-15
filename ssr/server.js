@@ -196,8 +196,14 @@ function treeOptions(payload) {
     ? payload.gitStatus.filter((entry) => entry && typeof entry.path === "string" && typeof entry.status === "string")
     : [];
   const selected = typeof payload.selected === "string" && payload.selected ? [payload.selected] : [];
+  // The diff tree's element id must never be "diff-file-tree", or Forgejo's
+  // native initDiffFileTree() (getElementById('diff-file-tree')) would mount
+  // its Vue tree over ours. Normalize that id so the rendered
+  // <file-tree-container id> matches the client's TREE_ID ("pierre-file-tree").
+  let id = typeof payload.id === "string" && payload.id ? payload.id : "file-tree";
+  if (id === "diff-file-tree") id = "pierre-file-tree";
   return {
-    id: typeof payload.id === "string" && payload.id ? payload.id : "file-tree",
+    id,
     paths,
     gitStatus,
     initialSelectedPaths: selected,
