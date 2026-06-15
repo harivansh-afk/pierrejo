@@ -14,7 +14,7 @@
 				</button>
 				<script>
 					// Default to true if unset
-					const diffTreeStorageKey = {{if $pierreTree}}'pierre_diff_file_tree_visible'{{else}}'diff_file_tree_visible'{{end}};
+					const diffTreeStorageKey = 'diff_file_tree_visible';
 					const diffTreeVisible = localStorage?.getItem(diffTreeStorageKey) !== 'false';
 					const diffTreeBtn = document.querySelector('.diff-toggle-file-tree-button');
 					const diffTreeIcon = `.octicon-sidebar-${diffTreeVisible ? 'expand' : 'collapse'}`;

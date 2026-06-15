@@ -4,7 +4,7 @@ import { treeUnsafeCss } from "./tree-theme.js";
 
 const CONTAINER_SELECTOR = '[data-pierre-forgejo-file-tree="1"]';
 const TREE_ID = "pierre-file-tree";
-const STORAGE_KEY = "pierre_diff_file_tree_visible";
+const STORAGE_KEY = "diff_file_tree_visible";
 
 const DIFF_TYPE_STATUS = {
   1: "added",
