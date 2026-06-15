@@ -3,7 +3,15 @@
 }
 
 [data-pierre-forgejo-file-tree="1"] {
-  overflow: hidden;
+  flex: 0 0 20%;
+  max-width: 380px;
+  height: 100%;
+  max-height: calc(100vh - 47px);
+  padding-top: 0;
+  overflow-y: auto;
+  line-height: inherit;
+  position: sticky;
+  top: 47px;
 }
 
 [data-pierre-forgejo-file-tree="1"] file-tree-container {
