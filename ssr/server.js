@@ -9,6 +9,16 @@ import { preloadFileTree, serializeFileTreeSsrPayload } from "@pierre/trees/ssr"
 import { createHighlighter, createJavaScriptRegexEngine } from "shiki";
 import { pierreThemeNames, pierreThemes } from "./theme.js";
 
+const SEARCH_HEADER_HTML = [
+  '<div data-pierre-file-tree-header>',
+  '<button type="button" data-pierre-file-tree-search-toggle aria-label="Search files" title="Search files">',
+  '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">',
+  '<circle cx="7" cy="7" r="4.25" fill="none" stroke="currentColor" stroke-width="1.5"/>',
+  '<path d="M10.25 10.25 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+  "</svg>",
+  "</button>",
+  "</div>",
+].join("");
 const TREE_CHROME_CSS =
   "button[data-item-type='folder'][data-item-contains-git-change] [data-item-section='git']{display:none}";
 const socketPath = process.env.PIERRE_SSR_SOCKET ?? "/run/pierre-ssr/pierre.sock";
@@ -195,6 +205,8 @@ function treeOptions(payload) {
   const selected = typeof payload.selected === "string" && payload.selected ? [payload.selected] : [];
   const id = typeof payload.id === "string" && payload.id ? payload.id : "pierre-file-tree";
   return {
+    composition: { header: { html: SEARCH_HEADER_HTML } },
+    fileTreeSearchMode: "hide-non-matches",
     id,
     paths,
     gitStatus,
@@ -203,6 +215,8 @@ function treeOptions(payload) {
     initialExpansion: "open",
     initialVisibleRowCount: 200,
     icons: { set: "standard", colored: true },
+    search: true,
+    searchBlurBehavior: "close",
     unsafeCSS: treeUnsafeCss(forgejoThemeType(payload.theme)),
   };
 }

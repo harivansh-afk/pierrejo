@@ -5,6 +5,17 @@ import { treeUnsafeCss } from "./tree-theme.js";
 const CONTAINER_SELECTOR = '[data-pierre-forgejo-file-tree="1"]';
 const TREE_ID = "pierre-file-tree";
 const STORAGE_KEY = "diff_file_tree_visible";
+const SEARCH_TOGGLE_SELECTOR = "[data-pierre-file-tree-search-toggle]";
+const SEARCH_HEADER_HTML = [
+  '<div data-pierre-file-tree-header>',
+  '<button type="button" data-pierre-file-tree-search-toggle aria-label="Search files" title="Search files">',
+  '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">',
+  '<circle cx="7" cy="7" r="4.25" fill="none" stroke="currentColor" stroke-width="1.5"/>',
+  '<path d="M10.25 10.25 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+  "</svg>",
+  "</button>",
+  "</div>",
+].join("");
 
 const DIFF_TYPE_STATUS = {
   1: "added",
@@ -143,6 +154,8 @@ function isVisible(container) {
 
 function treeOptions(controller) {
   return {
+    composition: { header: { html: SEARCH_HEADER_HTML } },
+    fileTreeSearchMode: "hide-non-matches",
     id: TREE_ID,
     paths: controller.state.paths,
     gitStatus: controller.state.gitStatus,
@@ -150,6 +163,8 @@ function treeOptions(controller) {
     initialExpansion: "open",
     initialVisibleRowCount: 200,
     icons: { set: "standard", colored: true },
+    search: true,
+    searchBlurBehavior: "close",
     unsafeCSS: treeUnsafeCss(forgejoThemeType()),
     onSelectionChange(paths) {
       if (controller.suppressSelection) return;
@@ -157,6 +172,23 @@ function treeOptions(controller) {
       if (path) navigateToFile(controller, path);
     },
   };
+}
+
+function bindSearchToggle(controller) {
+  const button = controller.tree?.getFileTreeContainer()?.querySelector(SEARCH_TOGGLE_SELECTOR);
+  if (!(button instanceof HTMLElement)) return;
+
+  button.addEventListener(
+    "click",
+    () => {
+      if (controller.tree?.isSearchOpen()) {
+        controller.tree.closeSearch();
+      } else {
+        controller.tree?.openSearch("");
+      }
+    },
+    { signal: controller.abortController.signal },
+  );
 }
 
 function mountTree(controller) {
@@ -177,6 +209,7 @@ function mountTree(controller) {
 
   controller.tree = tree;
   controller.container.dataset.pierreForgejoHydrated = "1";
+  bindSearchToggle(controller);
   selectFromHash(controller);
 }
 

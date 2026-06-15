@@ -20,6 +20,37 @@
   max-height: 100%;
 }
 
+[data-pierre-forgejo-file-tree="1"] [data-pierre-file-tree-header] {
+  box-sizing: border-box;
+  display: flex;
+  justify-content: flex-end;
+  padding: 6px 8px 0;
+}
+
+[data-pierre-forgejo-file-tree="1"] [data-pierre-file-tree-search-toggle] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  color: var(--color-text-light-2, currentColor);
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+[data-pierre-forgejo-file-tree="1"] [data-pierre-file-tree-search-toggle]:hover {
+  color: var(--color-text, currentColor);
+  background: var(--color-hover, rgba(128, 128, 128, 0.12));
+}
+
+[data-pierre-forgejo-file-tree="1"] [data-pierre-file-tree-search-toggle]:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
 .pierre-forgejo-diff pre,
 .pierre-forgejo-diff code {
   font-family: var(--fonts-monospace);
