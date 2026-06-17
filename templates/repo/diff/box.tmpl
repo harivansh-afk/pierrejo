@@ -94,9 +94,10 @@
 			window.config.pageData.diffFileInfo = diffFileInfo;
 		</script>
 	{{end}}
-	<div id="diff-container"{{if $showFileTree}} class="pierre-forgejo-diff-layout"{{end}}>
+	<div id="diff-container"{{if $pierreTree}} class="pierre-forgejo-diff-layout"{{end}}>
 		{{if $showFileTree}}
 			{{if $pierreTree}}
+				{{/* opt-in @pierre/trees tree (PIERRE_FILE_TREE=true); hydrated by pierre-forgejo.js */}}
 				<div id="pierre-diff-file-tree" class="not-mobile" data-pierre-forgejo-file-tree="1"><script>
 					(() => {
 						const diffTree = document.currentScript.parentElement;
@@ -107,15 +108,11 @@
 					})();
 				</script>{{$pierreTree}}</div>
 			{{else}}
-				<div id="diff-file-tree" class="not-mobile"><script>
-					(() => {
-						const diffTree = document.currentScript.parentElement;
-						const diffContainer = diffTree.parentElement;
-						const visible = window.__pierreDiffTreeVisible !== false;
-						diffTree.classList.toggle('tw-hidden', !visible);
-						diffContainer.classList.toggle('pierre-forgejo-tree-visible', visible);
-					})();
-				</script></div>
+				{{/* default: Forgejo's native Vue file tree mounts into #diff-file-tree */}}
+				<div id="diff-file-tree" class="tw-hidden not-mobile"></div>
+				<script>
+					if (window.__pierreDiffTreeVisible !== false) document.getElementById('diff-file-tree').classList.remove('tw-hidden');
+				</script>
 			{{end}}
 		{{end}}
 		<div id="diff-content-container">
