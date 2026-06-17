@@ -69,7 +69,7 @@ let
     substituteInPlace "$data/public/assets/js/index.js" \
       --replace-fail \
         'const We=document.getElementById("diff-file-tree");if(!We)return;' \
-        'const We=document.getElementById("diff-file-tree");if(!We||We.getAttribute("data-pierre-forgejo-file-tree")==="1")return;'
+        'const We=document.getElementById("diff-file-tree");if(!We||We.getAttribute("data-pierre-forgejo-file-tree")==="1"||We.getAttribute("data-pierre-forgejo-ssr-tree")==="1")return;'
   '';
 
   assets =

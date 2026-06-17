@@ -108,11 +108,15 @@
 					})();
 				</script>{{$pierreTree}}</div>
 			{{else}}
-				{{/* default: Forgejo's native Vue file tree mounts into #diff-file-tree */}}
-				<div id="diff-file-tree" class="tw-hidden not-mobile"></div>
-				<script>
-					if (window.__pierreDiffTreeVisible !== false) document.getElementById('diff-file-tree').classList.remove('tw-hidden');
-				</script>
+				{{/*
+					default: server-render the native-style file tree so it paints with
+					the diffs (the native Vue tree lazy-loads a chunk and always trails).
+					data-pierre-forgejo-ssr-tree disables the native Vue mount; behaviour
+					(collapse, hash highlight, toggle) is handled by native-tree.js.
+				*/}}
+				<div id="diff-file-tree" class="tw-hidden not-mobile" data-pierre-forgejo-ssr-tree="1"><script>
+					if (window.__pierreDiffTreeVisible !== false) document.currentScript.parentElement.classList.remove('tw-hidden');
+				</script><div class="diff-file-tree-items">{{range PierreDiffFileTree .Diff.Files}}{{template "repo/diff/pierre_tree_item" .}}{{end}}</div></div>
 			{{end}}
 		{{end}}
 		<div id="diff-content-container">
@@ -332,3 +336,23 @@
 		{{template "repo/issue/view_content/reference_issue_dialog" .}}
 	{{end}}
 </div>
+{{/*
+	Recursive item renderer for the server-rendered diff file tree. Mirrors the
+	markup of Forgejo's DiffFileTreeItem.vue so native CSS/JS behaviour matches.
+*/}}
+{{define "repo/diff/pierre_tree_item"}}
+	{{if .IsFile}}
+		<a class="item-file{{if .IsViewed}} viewed{{end}}" title="{{.Name}}" href="#diff-{{.NameHash}}">
+			{{svg "octicon-file" 16}}
+			<span class="gt-ellipsis tw-flex-1">{{.Name}}</span>
+			{{if .DiffIconName}}{{svg .DiffIconName 16 (printf "text %s" .DiffIconColor)}}{{end}}
+		</a>
+	{{else}}
+		<div class="item-directory" title="{{.Name}}">
+			{{svg "octicon-chevron-down" 16}}
+			{{svg "octicon-file-directory-fill" 16 "text primary"}}
+			<span class="gt-ellipsis">{{.Name}}</span>
+		</div>
+		{{if .Children}}<div class="sub-items">{{range .Children}}{{template "repo/diff/pierre_tree_item" .}}{{end}}</div>{{end}}
+	{{end}}
+{{end}}

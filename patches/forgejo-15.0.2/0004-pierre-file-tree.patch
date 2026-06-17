@@ -2,11 +2,12 @@ diff --git a/modules/templates/helper.go b/modules/templates/helper.go
 index ea9718f..23b0603 100644
 --- a/modules/templates/helper.go
 +++ b/modules/templates/helper.go
-@@ -217,6 +217,7 @@ func NewFuncMap() template.FuncMap {
+@@ -217,6 +217,8 @@ func NewFuncMap() template.FuncMap {
  		"IsMultilineCommitMessage": IsMultilineCommitMessage,
  		"CommentMustAsDiff":        gitdiff.CommentMustAsDiff,
  		"PierreDiff":               gitdiff.PierreDiff,
 +		"PierreFileTree":           gitdiff.PierreFileTree,
++		"PierreDiffFileTree":       gitdiff.PierreDiffFileTree,
  		"MirrorRemoteAddress":      mirrorRemoteAddress,
  
  		"FilenameIsImage": FilenameIsImage,
@@ -15,7 +16,7 @@ new file mode 100644
 index 0000000..0f7a777
 --- /dev/null
 +++ b/services/gitdiff/pierre_tree.go
-@@ -0,0 +1,133 @@
+@@ -0,0 +1,224 @@
 +// Copyright 2026 The Forgejo Authors. All rights reserved.
 +// SPDX-License-Identifier: MIT
 +
@@ -149,6 +150,97 @@ index 0000000..0f7a777
 +	}
 +	return template.HTML(out.HTML), true
 +}
++
++// PierreTreeNode is a node in the server-rendered diff file tree.
++type PierreTreeNode struct {
++	Name     string
++	IsFile   bool
++	NameHash string
++	Type     DiffFileType
++	IsViewed bool
++	Children []*PierreTreeNode
++}
++
++// DiffIconName returns the octicon for this file's diff status, matching
++// Forgejo's DiffFileTreeItem.vue getIconForDiffType.
++func (n *PierreTreeNode) DiffIconName() string {
++	switch n.Type {
++	case DiffFileAdd:
++		return "octicon-diff-added"
++	case DiffFileChange:
++		return "octicon-diff-modified"
++	case DiffFileDel:
++		return "octicon-diff-removed"
++	case DiffFileRename, DiffFileCopy:
++		return "octicon-diff-renamed"
++	}
++	return ""
++}
++
++// DiffIconColor returns the color class paired with DiffIconName.
++func (n *PierreTreeNode) DiffIconColor() string {
++	switch n.Type {
++	case DiffFileAdd, DiffFileCopy:
++		return "green"
++	case DiffFileChange:
++		return "yellow"
++	case DiffFileDel:
++		return "red"
++	case DiffFileRename:
++		return "teal"
++	}
++	return ""
++}
++
++func pierreMergeSingleDirs(entries []*PierreTreeNode) {
++	for _, entry := range entries {
++		pierreMergeSingleDirs(entry.Children)
++		if len(entry.Children) == 1 && !entry.Children[0].IsFile {
++			entry.Name = entry.Name + "/" + entry.Children[0].Name
++			entry.Children = entry.Children[0].Children
++		}
++	}
++}
++
++// PierreDiffFileTree builds the nested file tree for a diff's files using the
++// same nesting and single-directory-merge rules as Forgejo's native
++// DiffFileTree.vue, so the tree can be server-rendered identically and painted
++// with the diffs instead of being built client-side by Vue.
++func PierreDiffFileTree(files []*DiffFile) []*PierreTreeNode {
++	var roots []*PierreTreeNode
++	for _, file := range files {
++		if file == nil || file.Name == "" {
++			continue
++		}
++		splits := strings.Split(file.Name, "/")
++		var parent *PierreTreeNode
++		siblings := &roots
++		for i, split := range splits {
++			isFile := i == len(splits)-1
++			var existing *PierreTreeNode
++			for _, child := range *siblings {
++				if child.Name == split {
++					existing = child
++					break
++				}
++			}
++			if existing == nil {
++				node := &PierreTreeNode{Name: split, IsFile: isFile}
++				if isFile {
++					node.NameHash = file.NameHash
++					node.Type = file.Type
++					node.IsViewed = file.IsViewed
++				}
++				*siblings = append(*siblings, node)
++				existing = node
++			}
++			parent = existing
++			siblings = &parent.Children
++		}
++	}
++	pierreMergeSingleDirs(roots)
++	return roots
++}
 diff --git a/web_src/js/features/file-fold.js b/web_src/js/features/file-fold.js
 index 3efefaf..66a0766 100644
 --- a/web_src/js/features/file-fold.js
@@ -172,7 +264,7 @@ index 85dec40..bb8d8c8 100644
    const el = document.getElementById('diff-file-tree');
    if (!el) return;
  
-+  if (el.getAttribute('data-pierre-forgejo-file-tree') === '1') return;
++  if (el.getAttribute('data-pierre-forgejo-file-tree') === '1' || el.getAttribute('data-pierre-forgejo-ssr-tree') === '1') return;
 +
    const {default: DiffFileTree} = await import(/* webpackChunkName: "diff-file-tree" */'../components/DiffFileTree.vue');
    const fileTreeView = createApp(DiffFileTree);

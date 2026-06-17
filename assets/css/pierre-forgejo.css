@@ -66,6 +66,72 @@
   margin: 8px 16px 12px;
 }
 
+/*
+ * Server-rendered diff file tree (default sidebar). The markup mirrors
+ * Forgejo's native DiffFileTree.vue, but its <style scoped> rules are tied to
+ * Vue's data-v attributes and so don't apply to SSR markup; replicate them
+ * here, scoped under #diff-file-tree.
+ */
+#diff-file-tree .diff-file-tree-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-right: 0.5rem;
+}
+
+#diff-file-tree .item-file,
+#diff-file-tree .item-directory {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+  padding: 3px 6px;
+  text-decoration: none;
+  color: var(--color-text);
+}
+
+#diff-file-tree .item-file:hover,
+#diff-file-tree .item-directory:hover {
+  color: var(--color-text);
+  background: var(--color-hover);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#diff-file-tree .item-file.selected {
+  color: var(--color-text);
+  background: var(--color-active);
+  border-radius: 4px;
+}
+
+#diff-file-tree .item-file.viewed {
+  color: var(--color-text-light-3);
+}
+
+#diff-file-tree .sub-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-left: 13px;
+  border-left: 1px solid var(--color-secondary);
+}
+
+#diff-file-tree .sub-items .item-file {
+  padding-left: 18px;
+}
+
+/* Directory collapse (handled by native-tree.js toggling .pierre-collapsed). */
+#diff-file-tree .item-directory.pierre-collapsed + .sub-items {
+  display: none;
+}
+
+#diff-file-tree .item-directory .octicon-chevron-down {
+  transition: transform 0.1s ease;
+}
+
+#diff-file-tree .item-directory.pierre-collapsed .octicon-chevron-down {
+  transform: rotate(-90deg);
+}
+
 .pierre-forgejo-gutter-comment {
   position: relative;
   z-index: 5;
