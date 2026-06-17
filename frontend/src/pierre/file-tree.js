@@ -214,7 +214,10 @@ function treeOptions(controller) {
     paths: controller.state.paths,
     gitStatus: controller.state.gitStatus,
     flattenEmptyDirectories: true,
-    presorted: true,
+    // Forgejo yields paths in diff order, not lexical order. @pierre/trees'
+    // builder asserts lexically-sorted input when presorted is true (it throws
+    // "Builder input must be sorted before appendPaths()"), so let it sort.
+    presorted: false,
     initialExpansion: "open",
     initialVisibleRowCount: 200,
     icons: TREE_ICONS,

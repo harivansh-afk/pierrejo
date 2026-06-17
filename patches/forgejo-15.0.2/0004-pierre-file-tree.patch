@@ -15,7 +15,7 @@ new file mode 100644
 index 0000000..0f7a777
 --- /dev/null
 +++ b/services/gitdiff/pierre_tree.go
-@@ -0,0 +1,129 @@
+@@ -0,0 +1,133 @@
 +// Copyright 2026 The Forgejo Authors. All rights reserved.
 +// SPDX-License-Identifier: MIT
 +
@@ -28,6 +28,7 @@ index 0000000..0f7a777
 +	"html/template"
 +	"io"
 +	"net/http"
++	"os"
 +	"strings"
 +)
 +
@@ -65,10 +66,13 @@ index 0000000..0f7a777
 +}
 +
 +// PierreFileTree returns a server-rendered Pierre file tree (declarative shadow
-+// DOM) for a Forgejo diff's file list. It returns "" when the sidecar is
-+// unavailable or produces nothing, so the template can fall back to Forgejo's
-+// native file tree.
++// DOM) for a Forgejo diff's file list. It is opt-in: unless PIERRE_FILE_TREE is
++// "true" it returns "" so the template renders Forgejo's native (default) file
++// tree. It also returns "" when the sidecar is unavailable or produces nothing.
 +func PierreFileTree(files []*DiffFile, theme string) template.HTML {
++	if os.Getenv("PIERRE_FILE_TREE") != "true" {
++		return ""
++	}
 +	if len(files) == 0 {
 +		return ""
 +	}

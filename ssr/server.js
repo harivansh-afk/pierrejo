@@ -202,7 +202,9 @@ function treeOptions(payload) {
     gitStatus,
     initialSelectedPaths: selected,
     flattenEmptyDirectories: true,
-    presorted: true,
+    // Paths arrive in diff order, not lexical order; @pierre/trees' builder
+    // requires lexically-sorted input when presorted is true, so let it sort.
+    presorted: false,
     initialExpansion: "open",
     initialVisibleRowCount: 200,
     icons: TREE_ICONS,
