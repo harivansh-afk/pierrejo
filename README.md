@@ -1,5 +1,7 @@
 # pierrejo
 
+<img width="full" height="full" alt="image" src="https://github.com/user-attachments/assets/c580bd48-a67a-498b-b914-5aa19d1decc4" />
+
 Pierre diffs for Forgejo.
 
 pierrejo packages the Forgejo integration layer for @pierre/diffs and @pierre/trees: a server-side rendering sidecar, the browser hydration bridge, Forgejo patches, and the template override needed to render Pierre diffs inside Forgejo pull request pages.
