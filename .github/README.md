@@ -3,6 +3,8 @@
 > [!IMPORTANT]
 > This is a read-only mirror of <https://git.harivan.sh/harivansh-afk/pierrejo>. Use Forgejo for issues, pull requests, and active development.
 
+<img width="1756" height="1238" alt="image" src="https://github.com/user-attachments/assets/c580bd48-a67a-498b-b914-5aa19d1decc4" />
+
 Pierre diffs for Forgejo.
 
 pierrejo packages the Forgejo integration layer for @pierre/diffs: a server-side rendering sidecar, the browser hydration bridge, Forgejo patches, and the diff template override needed to render Pierre diffs inside Forgejo pull request pages.
