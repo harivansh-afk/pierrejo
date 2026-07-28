@@ -70,6 +70,9 @@ let
     # the built bundle. The minified local name for the element ("We" on the
     # 15.0.2 build) changes between Forgejo releases, so match it with a
     # capture group instead of hard-coding it, then verify the guard landed.
+    # The assets dir is copied out of the store read-only, and sed -i creates
+    # its temp file next to the target, so make the dir and file writable first.
+    chmod u+w "$data/public/assets/js" "$data/public/assets/js/index.js"
     sed -Ei \
       's/const ([A-Za-z_$][A-Za-z0-9_$]*)=document\.getElementById\("diff-file-tree"\);if\(!\1\)return;/const \1=document.getElementById("diff-file-tree");if(!\1||\1.getAttribute("data-pierre-forgejo-file-tree")==="1"||\1.getAttribute("data-pierre-forgejo-ssr-tree")==="1")return;/' \
       "$data/public/assets/js/index.js"
