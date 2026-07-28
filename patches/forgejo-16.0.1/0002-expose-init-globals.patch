@@ -1,7 +1,8 @@
 diff --git a/web_src/js/features/repo-issue.js b/web_src/js/features/repo-issue.js
+index ba252856d..ce7c0f8a0 100644
 --- a/web_src/js/features/repo-issue.js
 +++ b/web_src/js/features/repo-issue.js
-@@ -6,6 +6,7 @@
+@@ -5,12 +5,25 @@ import {hideElem, showElem, toggleElem} from '../utils/dom.js';
  import {setFileFolding} from './file-fold.js';
  import {getComboMarkdownEditor, initComboMarkdownEditor} from './comp/ComboMarkdownEditor.js';
  import {toAbsoluteUrl} from '../utils.js';
@@ -9,10 +10,9 @@ diff --git a/web_src/js/features/repo-issue.js b/web_src/js/features/repo-issue.
  import {initDropzone} from './common-global.js';
  import {POST, GET} from '../modules/fetch.js';
  import {showErrorToast} from '../modules/toast.js';
-@@ -12,6 +13,18 @@
-
+ 
  const {appSubUrl} = window.config;
-
+ 
 +// Expose comment-form helpers on window so the Pierre SSR diff hydration
 +// layer can re-initialize ComboMarkdownEditor / Dropzone / ReactionSelector
 +// on dynamically-injected conversation HTML (mounted into <diffs-container>

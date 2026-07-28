@@ -1,8 +1,8 @@
 diff --git a/modules/templates/helper.go b/modules/templates/helper.go
-index a6235c3..ea9718f 100644
+index 15b36d5dc..be3eecf90 100644
 --- a/modules/templates/helper.go
 +++ b/modules/templates/helper.go
-@@ -216,6 +216,7 @@ func NewFuncMap() template.FuncMap {
+@@ -218,6 +218,7 @@ func NewFuncMap() template.FuncMap {
  		"ActionContent2Commits":    ActionContent2Commits,
  		"IsMultilineCommitMessage": IsMultilineCommitMessage,
  		"CommentMustAsDiff":        gitdiff.CommentMustAsDiff,
@@ -11,7 +11,7 @@ index a6235c3..ea9718f 100644
  
  		"FilenameIsImage": FilenameIsImage,
 diff --git a/services/gitdiff/gitdiff.go b/services/gitdiff/gitdiff.go
-index c1d0bc0..b72beef 100644
+index fa3c26f14..1d0bd0d23 100644
 --- a/services/gitdiff/gitdiff.go
 +++ b/services/gitdiff/gitdiff.go
 @@ -300,7 +300,10 @@ func DiffInlineWithUnicodeEscape(s template.HTML, locale translation.Locale) Dif
@@ -27,7 +27,7 @@ index c1d0bc0..b72beef 100644
  	return DiffInline{EscapeStatus: status, Content: content}
  }
 diff --git a/services/gitdiff/highlightdiff.go b/services/gitdiff/highlightdiff.go
-index 61d52d9..acffd78 100644
+index 61d52d91e..acffd78bb 100644
 --- a/services/gitdiff/highlightdiff.go
 +++ b/services/gitdiff/highlightdiff.go
 @@ -91,8 +91,14 @@ func (hcd *HighlightCodeDiff) diffWithHighlight(filename, language, codeA, codeB
@@ -49,7 +49,7 @@ index 61d52d9..acffd78 100644
  	convertedCodeB := hcd.ConvertToPlaceholders(string(highlightCodeB))
 diff --git a/services/gitdiff/pierre.go b/services/gitdiff/pierre.go
 new file mode 100644
-index 0000000..ba88fab
+index 000000000..70e0d740a
 --- /dev/null
 +++ b/services/gitdiff/pierre.go
 @@ -0,0 +1,275 @@

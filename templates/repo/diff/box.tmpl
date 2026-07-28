@@ -241,7 +241,7 @@
 											data-pierre-forgejo-split="{{if $.IsSplitStyle}}1{{else}}0{{end}}"
 											data-pierre-forgejo-pull="{{if $.PageIsPullFiles}}1{{else}}0{{end}}"
 											data-pierre-forgejo-can-comment="{{if and $.PageIsPullFiles $.IsSigned (not $.Repository.IsArchived)}}1{{else}}0{{end}}"
-											data-new-comment-url="{{$.Issue.Link}}/files/reviews/new_comment"
+											data-new-comment-url="{{$.Issue.Link}}/files/reviews/new_comment?before_commit_id={{$.BeforeCommitID}}&after_commit_id={{$.AfterCommitID}}"
 											data-path="{{$file.Name}}">
 											<template shadowrootmode="open">{{$pierreSsr}}</template>
 										</diffs-container>
@@ -268,7 +268,7 @@
 											</div>
 										{{end}}
 									{{else}}
-										<table class="chroma" data-new-comment-url="{{$.Issue.Link}}/files/reviews/new_comment" data-path="{{$file.Name}}">
+										<table class="chroma" data-new-comment-url="{{$.Issue.Link}}/files/reviews/new_comment?before_commit_id={{$.BeforeCommitID}}&after_commit_id={{$.AfterCommitID}}" data-path="{{$file.Name}}">
 											{{if $.IsSplitStyle}}
 												{{template "repo/diff/section_split" dict "file" . "root" $}}
 											{{else}}

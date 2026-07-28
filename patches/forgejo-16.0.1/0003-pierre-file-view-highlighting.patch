@@ -1,5 +1,5 @@
 diff --git a/routers/web/repo/view.go b/routers/web/repo/view.go
-index 287cd1b..f3ab90a 100644
+index 09adfae06..caa709365 100644
 --- a/routers/web/repo/view.go
 +++ b/routers/web/repo/view.go
 @@ -53,6 +53,7 @@ import (
@@ -10,7 +10,7 @@ index 287cd1b..f3ab90a 100644
  	repo_service "forgejo.org/services/repository"
  	files_service "forgejo.org/services/repository/files"
  
-@@ -590,8 +591,14 @@ func renderFile(ctx *context.Context, entry *git.TreeEntry) {
+@@ -593,8 +594,14 @@ func renderFile(ctx *context.Context, entry *git.TreeEntry) {
  				log.Error("Unable to get file language for %-v:%s. Error: %v", ctx.Repo.Repository, ctx.Repo.TreePath, err)
  			}
  

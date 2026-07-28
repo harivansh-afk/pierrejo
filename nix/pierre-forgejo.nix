@@ -54,22 +54,30 @@ let
   };
 
   corePatches = [
-    (root + "/patches/forgejo-15.0.2/0001-pierre-ssr-highlighting.patch")
-    (root + "/patches/forgejo-15.0.2/0002-expose-init-globals.patch")
-    (root + "/patches/forgejo-15.0.2/0004-pierre-file-tree.patch")
+    (root + "/patches/forgejo-16.0.1/0001-pierre-ssr-highlighting.patch")
+    (root + "/patches/forgejo-16.0.1/0002-expose-init-globals.patch")
+    (root + "/patches/forgejo-16.0.1/0004-pierre-file-tree.patch")
   ];
 
   fileViewPatches = [
-    (root + "/patches/forgejo-15.0.2/0003-pierre-file-view-highlighting.patch")
+    (root + "/patches/forgejo-16.0.1/0003-pierre-file-view-highlighting.patch")
   ];
 
   patches = corePatches ++ fileViewPatches;
 
   patchBundledForgejoAssets = ''
-    substituteInPlace "$data/public/assets/js/index.js" \
-      --replace-fail \
-        'const We=document.getElementById("diff-file-tree");if(!We)return;' \
-        'const We=document.getElementById("diff-file-tree");if(!We||We.getAttribute("data-pierre-forgejo-file-tree")==="1")return;'
+    # Guard the native Vue diff-file-tree mount behind the pierre attributes in
+    # the built bundle. The minified local name for the element ("We" on the
+    # 15.0.2 build) changes between Forgejo releases, so match it with a
+    # capture group instead of hard-coding it, then verify the guard landed.
+    sed -Ei \
+      's/const ([A-Za-z_$][A-Za-z0-9_$]*)=document\.getElementById\("diff-file-tree"\);if\(!\1\)return;/const \1=document.getElementById("diff-file-tree");if(!\1||\1.getAttribute("data-pierre-forgejo-file-tree")==="1"||\1.getAttribute("data-pierre-forgejo-ssr-tree")==="1")return;/' \
+      "$data/public/assets/js/index.js"
+    grep -qE 'document\.getElementById\("diff-file-tree"\);if\(![A-Za-z0-9_$]+\|\|[A-Za-z0-9_$]+\.getAttribute\("data-pierre-forgejo-file-tree"\)' \
+      "$data/public/assets/js/index.js" || {
+      echo "pierrejo: diff-file-tree guard did not apply to bundled index.js" >&2
+      exit 1
+    }
   '';
 
   assets =

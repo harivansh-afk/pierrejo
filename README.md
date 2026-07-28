@@ -45,7 +45,7 @@ The consumer must expose these files through Forgejo's custom directory:
 - pierrejo.frontend / js / pierre-forgejo.js under custom/public/assets/js/pierre-forgejo.js
 - pierrejo.templates / repo / diff / box.tmpl under custom/templates/repo/diff/box.tmpl
 
-The current patches target Forgejo 15.0.2.
+The current patches target Forgejo 16.0.1. The box.tmpl override tracks the v16 review-comment placement rework: new-comment URLs carry before_commit_id/after_commit_id, and existing multi-line (shift+click) review threads render at their anchor row inside Pierre diffs with the native "Lines X-Y" label. Starting a NEW multi-line selection from the Pierre gutter is not yet supported (single-line comments work as before); it needs range selection in the upstream @pierre/diffs gutter UI.
 
 ## Custom diff theme
 
