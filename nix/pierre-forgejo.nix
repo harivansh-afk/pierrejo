@@ -24,7 +24,7 @@ let
     pname = "pierrejo-frontend";
     version = "0.1.0";
     src = withTheme "frontend" (root + "/frontend") "src/pierre/themes";
-    npmDepsHash = "sha256-ybqIh9Uj4plBOB4Xgjm9K9EgxnOyDwQ9kHEPzz6wVEU=";
+    npmDepsHash = "sha256-SnBULUSGc3cfNj5859QYVcSDSqvNku39BxwB6WVVeVs=";
     installPhase = ''
       runHook preInstall
       mkdir -p $out/js
@@ -38,7 +38,7 @@ let
     pname = "pierrejo-ssr";
     version = "0.1.0";
     src = withTheme "ssr" (root + "/ssr") "themes";
-    npmDepsHash = "sha256-+E01bAkiqIrN1hlr3Qsjvg2rveW1ofUBf83bBZGNcGM=";
+    npmDepsHash = "sha256-zW4JKhUmyYfXcG3vD1/HlOLXKVwCAiMAnGsjLR6sKRs=";
     dontNpmBuild = true;
     nativeBuildInputs = [
       pkgs.makeWrapper

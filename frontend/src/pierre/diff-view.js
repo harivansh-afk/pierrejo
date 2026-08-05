@@ -1,4 +1,5 @@
 import { pierre } from "./client.js";
+import { makeContentsLoader, wireEditButton } from "./edit-mode.js";
 import { pierreDiffOptions } from "./options.js";
 import { renderAnnotation } from "./pr-comment-render.js";
 import {
@@ -72,6 +73,9 @@ async function hydratePlaceholder(placeholder) {
       ...options,
       renderAnnotation,
       renderGutterUtility: renderGutterUtility(placeholder),
+      // Fetch full old/new file contents from Forgejo raw endpoints when the
+      // partial patch diff needs them (hunk expansion, edit mode).
+      loadDiffFiles: makeContentsLoader(placeholder),
     });
     // Seed the store entry before hydrate so the gutter handler can write a
     // composer annotation through it without racing the assignment below.
@@ -89,6 +93,7 @@ async function hydratePlaceholder(placeholder) {
     // Apply the full view-state (existing conversations + composer slot if any)
     // so Pierre projects each annotation into a slot at the matching row.
     instance.setLineAnnotations(viewAnnotationsForPlaceholder(placeholder));
+    wireEditButton(placeholder);
   } catch (error) {
     console.warn("Pierre diff hydration failed", error);
     delete placeholder.dataset.pierreForgejoHydrated;

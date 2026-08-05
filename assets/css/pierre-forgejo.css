@@ -95,3 +95,33 @@
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
+
+.pierre-forgejo-edit-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pierre-forgejo-edit-summary {
+  min-width: 220px;
+  padding: 3px 8px;
+  border: 1px solid var(--color-secondary);
+  border-radius: var(--border-radius, 4px);
+  background: var(--color-input-background);
+  color: var(--color-input-text);
+  font-size: 12px;
+}
+
+.pierre-forgejo-edit-summary:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.pierre-forgejo-edit-notice {
+  font-size: 12px;
+  color: var(--color-text-light-2);
+}
+
+.pierre-forgejo-edit-notice.error {
+  color: var(--color-red);
+}
