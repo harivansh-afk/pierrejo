@@ -47,6 +47,29 @@ The consumer must expose these files through Forgejo's custom directory:
 
 The current patches target Forgejo 16.0.1. The box.tmpl override tracks the v16 review-comment placement rework: new-comment URLs carry before_commit_id/after_commit_id, and existing multi-line (shift+click) review threads render at their anchor row inside Pierre diffs with the native "Lines X-Y" label. Starting a NEW multi-line selection from the Pierre gutter is not yet supported (single-line comments work as before); it needs range selection in the upstream @pierre/diffs gutter UI.
 
+## In-place diff editing
+
+PR diffs are editable in place via @pierre/diffs 1.3 edit mode
+(https://diffs.com/edit). Each editable file in a PR gets an "Edit inline"
+button next to Forgejo's native "Edit this file" link, shown under the same
+conditions (head branch editable, not deleted/LFS/binary/submodule). Clicking
+it turns the rendered diff into a live editor:
+
+- The editor chunk (@pierre/diffs/edit) is lazy-loaded on first use.
+- Partial patch diffs hydrate to full file contents through Forgejo's raw
+  endpoints (`/raw/commit/<sha>/<path>`) before edits apply, so commits always
+  carry the complete file. This wiring also enables hunk context expansion.
+- "Commit" posts through Forgejo's native `_edit` form flow (session auth,
+  `last_commit` conflict detection, default commit email) directly to the PR
+  head branch, then reloads the page. A stale head (someone pushed meanwhile)
+  surfaces Forgejo's own edit-conflict error in the toolbar instead of
+  committing.
+- "Cancel" discards the session; if the document changed, the page reloads to
+  restore the server-rendered diff.
+
+Edit mode requires a browser with `Intl.Segmenter` (Chrome/Edge 123+,
+Safari 17.5+, Firefox 125+ per the @pierre/diffs 1.3 baseline).
+
 ## Custom diff theme
 
 By default diffs are highlighted with the bundled `cozybox` Shiki theme. To use
