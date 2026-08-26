@@ -36,6 +36,12 @@
   line-height: inherit;
   position: sticky;
   top: var(--pierre-forgejo-file-tree-top, 47px);
+  /* Sticky clamps the margin box to the containing block, so without this the
+     shell gets pushed up under the sticky diff-detail-box once the viewport
+     bottom passes #diff-container (by the height of the footer below it). The
+     negative bottom margin removes the bottom clamp and lets the shell
+     overhang the footer instead. */
+  margin-bottom: -100dvh;
 }
 
 [data-pierre-forgejo-file-tree="1"] file-tree-container {
