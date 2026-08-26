@@ -11,7 +11,8 @@ import { pierreThemeNames, pierreThemes } from "./theme.js";
 
 const TREE_CHROME_CSS =
   ':host{--trees-font-family-override:"Berkeley Mono",var(--fonts-monospace,ui-monospace,Menlo,monospace)}' +
-  "button[data-item-type='folder'][data-item-contains-git-change] [data-item-section='git']{display:none}";
+  "button[data-item-type='folder'][data-item-contains-git-change] [data-item-section='git']{display:none}" +
+  "button[data-item-git-status] > [data-item-section='content']{color:var(--trees-fg)}";
 const TREE_ICONS = { set: "complete", colored: true };
 const socketPath = process.env.PIERRE_SSR_SOCKET ?? "/run/pierre-ssr/pierre.sock";
 const cacheDir = process.env.PIERRE_SSR_CACHE_DIR ?? "/var/cache/pierre-ssr";
