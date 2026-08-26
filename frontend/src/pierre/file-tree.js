@@ -96,6 +96,9 @@ function navigateToFile(controller, path) {
 function selectTreePath(controller, path) {
   if (!path || !controller.tree) return false;
 
+  const current = controller.tree.getSelectedPaths();
+  if (current.length === 1 && current[0] === path) return true;
+
   controller.suppressSelection = true;
   try {
     for (const selected of controller.tree.getSelectedPaths()) {
@@ -144,29 +147,10 @@ function syncSelectionFromScroll(controller) {
   selectTreePath(controller, activeDiffPath(controller));
 }
 
-function syncTreeShellPosition(controller) {
-  const layout = controller.container.parentElement;
-  if (!layout || !isVisible(controller.container)) {
-    controller.container.classList.remove("pierre-forgejo-file-tree-fixed");
-    return;
-  }
-
-  const top = Number.parseFloat(getComputedStyle(controller.container).top) || 0;
-  const layoutRect = layout.getBoundingClientRect();
-  const columns = getComputedStyle(layout).gridTemplateColumns.trim().split(/\\s+/);
-  const columnWidth = Number.parseFloat(columns[0]) || controller.container.getBoundingClientRect().width;
-  const shouldFix = layoutRect.top <= top && layoutRect.bottom > top;
-
-  controller.container.style.setProperty("--pierre-forgejo-file-tree-left", layoutRect.left + "px");
-  controller.container.style.setProperty("--pierre-forgejo-file-tree-fixed-width", columnWidth + "px");
-  controller.container.classList.toggle("pierre-forgejo-file-tree-fixed", shouldFix);
-}
-
 function scheduleScrollSelectionSync(controller) {
   if (controller.selectionFrame !== null) return;
   controller.selectionFrame = requestAnimationFrame(() => {
     controller.selectionFrame = null;
-    syncTreeShellPosition(controller);
     syncSelectionFromScroll(controller);
   });
 }
@@ -186,7 +170,6 @@ function storedTreeVisible() {
 function setTreeVisible(controller, visible) {
   const [showIcon, hideIcon] = controller.button?.querySelectorAll(".icon") ?? [];
   controller.container.parentElement?.classList.toggle("pierre-forgejo-tree-visible", visible);
-  if (!visible) controller.container.classList.remove("pierre-forgejo-file-tree-fixed");
   controller.button?.setAttribute(
     "data-tooltip-content",
     controller.button.getAttribute(visible ? "data-hide-text" : "data-show-text"),
@@ -201,7 +184,6 @@ function setTreeVisible(controller, visible) {
   }
 
   if (visible) mountTree(controller);
-  if (visible) syncTreeShellPosition(controller);
 }
 
 function isVisible(container) {
