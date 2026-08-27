@@ -200,9 +200,19 @@ function gitPathKey(entry) {
 }
 
 function compareGitPathOrder(a, b) {
+  // Compare by Unicode code point, not UTF-16 code unit: UTF-8 byte order
+  // (what git sorts the diff by) equals code-point order, while plain JS
+  // string comparison misorders astral characters against U+E000..U+FFFF.
   const ka = gitPathKey(a);
   const kb = gitPathKey(b);
-  return ka < kb ? -1 : ka > kb ? 1 : 0;
+  let i = 0;
+  while (i < ka.length && i < kb.length) {
+    const ca = ka.codePointAt(i);
+    const cb = kb.codePointAt(i);
+    if (ca !== cb) return ca < cb ? -1 : 1;
+    i += ca > 0xffff ? 2 : 1;
+  }
+  return ka.length - kb.length;
 }
 
 function treeOptions(payload) {
@@ -234,10 +244,10 @@ async function renderTree(payload) {
   if (options.paths.length === 0) return { html: "" };
 
   const key = createHash("sha256")
-    // version 4: git-path sort order. The sort comparator is a function and
+    // version 5: code-point path sort. The sort comparator is a function and
     // does not survive JSON.stringify, so the version marker is what keeps
-    // pre-sort cache entries from being served.
-    .update(JSON.stringify({ tree: options, version: 4 }))
+    // stale-order cache entries from being served.
+    .update(JSON.stringify({ tree: options, version: 5 }))
     .digest("hex");
   const path = cachePath(key);
 
