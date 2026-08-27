@@ -54,24 +54,30 @@ let
   };
 
   corePatches = [
-    (root + "/patches/forgejo-16.0.1/0001-pierre-ssr-highlighting.patch")
-    (root + "/patches/forgejo-16.0.1/0002-expose-init-globals.patch")
-    (root + "/patches/forgejo-16.0.1/0004-pierre-file-tree.patch")
+    (root + "/patches/forgejo-16/0001-pierre-ssr-highlighting.patch")
+    (root + "/patches/forgejo-16/0002-expose-init-globals.patch")
+    (root + "/patches/forgejo-16/0004-pierre-file-tree.patch")
   ];
 
   fileViewPatches = [
-    (root + "/patches/forgejo-16.0.1/0003-pierre-file-view-highlighting.patch")
+    (root + "/patches/forgejo-16/0003-pierre-file-view-highlighting.patch")
   ];
 
   patches = corePatches ++ fileViewPatches;
 
   patchBundledForgejoAssets = ''
-    # Guard the native Vue diff-file-tree mount behind the pierre attributes in
-    # the built bundle. The minified local name for the element ("We" on the
-    # 15.0.2 build) changes between Forgejo releases, so match it with a
-    # capture group instead of hard-coding it, then verify the guard landed.
+    # Nixpkgs' forgejo builds its JS bundle in a separate frontend
+    # sub-derivation from UNPATCHED source, so the web_src hunks in patch 0004
+    # (the repo-diff-filetree.js guard and the file-fold.js
+    # window._pierreSetFileFolding expose) never reach the bundle. This sed is
+    # therefore the only mechanism that guards the native Vue diff-file-tree
+    # mount; the file-fold expose stays inert and the frontend falls back to
+    # clicking .fold-file, which works. The minified local name for the
+    # element changes between Forgejo releases, so match it with a capture
+    # group instead of hard-coding it, then verify the guard landed.
     # The assets dir is copied out of the store read-only, and sed -i creates
-    # its temp file next to the target, so make the dir and file writable first.
+    # its temp file next to the target, so make the dir and file writable
+    # first.
     chmod u+w "$data/public/assets/js" "$data/public/assets/js/index.js"
     sed -Ei \
       's/const ([A-Za-z_$][A-Za-z0-9_$]*)=document\.getElementById\("diff-file-tree"\);if\(!\1\)return;/const \1=document.getElementById("diff-file-tree");if(!\1||\1.getAttribute("data-pierre-forgejo-file-tree")==="1"||\1.getAttribute("data-pierre-forgejo-ssr-tree")==="1")return;/' \

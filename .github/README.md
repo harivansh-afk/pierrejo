@@ -44,4 +44,4 @@ The consumer must expose these files through Forgejo's custom directory:
 - pierrejo.frontend / js / pierre-forgejo.js under custom/public/assets/js/pierre-forgejo.js
 - pierrejo.templates / repo / diff / box.tmpl under custom/templates/repo/diff/box.tmpl
 
-The current patches target Forgejo 15.0.2.
+The patches live in patches/forgejo-16/ and currently build against Forgejo 16.0.3.
