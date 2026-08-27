@@ -28,9 +28,19 @@ function gitPathKey(entry) {
 }
 
 function compareGitPathOrder(a, b) {
+  // Compare by Unicode code point, not UTF-16 code unit: UTF-8 byte order
+  // (what git sorts the diff by) equals code-point order, while plain JS
+  // string comparison misorders astral characters against U+E000..U+FFFF.
   const ka = gitPathKey(a);
   const kb = gitPathKey(b);
-  return ka < kb ? -1 : ka > kb ? 1 : 0;
+  let i = 0;
+  while (i < ka.length && i < kb.length) {
+    const ca = ka.codePointAt(i);
+    const cb = kb.codePointAt(i);
+    if (ca !== cb) return ca < cb ? -1 : 1;
+    i += ca > 0xffff ? 2 : 1;
+  }
+  return ka.length - kb.length;
 }
 
 function diffFileInfo() {
