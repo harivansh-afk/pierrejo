@@ -190,6 +190,21 @@ function treeUnsafeCss(themeType) {
   return ":host{" + light + "}@media (prefers-color-scheme:dark){:host{" + dark + "}}" + TREE_CHROME_CSS;
 }
 
+// Order tree rows exactly like git orders the flat diff: full paths compared
+// bytewise, with directories keyed by "name/" so they interleave with files
+// the way git paths do. The default sort groups directories first at every
+// level, which puts the sidebar out of order with the diff boxes.
+// Keep in sync with the copy in frontend/src/pierre/file-tree.js.
+function gitPathKey(entry) {
+  return entry.isDirectory && !entry.path.endsWith("/") ? entry.path + "/" : entry.path;
+}
+
+function compareGitPathOrder(a, b) {
+  const ka = gitPathKey(a);
+  const kb = gitPathKey(b);
+  return ka < kb ? -1 : ka > kb ? 1 : 0;
+}
+
 function treeOptions(payload) {
   const paths = Array.isArray(payload.paths) ? payload.paths.filter((p) => typeof p === "string" && p) : [];
   const gitStatus = Array.isArray(payload.gitStatus)
@@ -206,6 +221,7 @@ function treeOptions(payload) {
     // Paths arrive in diff order, not lexical order; @pierre/trees' builder
     // requires lexically-sorted input when presorted is true, so let it sort.
     presorted: false,
+    sort: compareGitPathOrder,
     initialExpansion: "open",
     initialVisibleRowCount: 200,
     icons: TREE_ICONS,
@@ -218,7 +234,10 @@ async function renderTree(payload) {
   if (options.paths.length === 0) return { html: "" };
 
   const key = createHash("sha256")
-    .update(JSON.stringify({ tree: options, version: 3 }))
+    // version 4: git-path sort order. The sort comparator is a function and
+    // does not survive JSON.stringify, so the version marker is what keeps
+    // pre-sort cache entries from being served.
+    .update(JSON.stringify({ tree: options, version: 4 }))
     .digest("hex");
   const path = cachePath(key);
 

@@ -18,6 +18,21 @@ const DIFF_TYPE_STATUS = {
 
 let activeTree = null;
 
+// Order tree rows exactly like git orders the flat diff: full paths compared
+// bytewise, with directories keyed by "name/" so they interleave with files
+// the way git paths do. The default sort groups directories first at every
+// level, which puts the sidebar out of order with the diff boxes.
+// Keep in sync with the copy in ssr/server.js.
+function gitPathKey(entry) {
+  return entry.isDirectory && !entry.path.endsWith("/") ? entry.path + "/" : entry.path;
+}
+
+function compareGitPathOrder(a, b) {
+  const ka = gitPathKey(a);
+  const kb = gitPathKey(b);
+  return ka < kb ? -1 : ka > kb ? 1 : 0;
+}
+
 function diffFileInfo() {
   return window.config?.pageData?.diffFileInfo;
 }
@@ -200,6 +215,7 @@ function treeOptions(controller) {
     // builder asserts lexically-sorted input when presorted is true (it throws
     // "Builder input must be sorted before appendPaths()"), so let it sort.
     presorted: false,
+    sort: compareGitPathOrder,
     initialExpansion: "open",
     initialVisibleRowCount: 200,
     icons: TREE_ICONS,
